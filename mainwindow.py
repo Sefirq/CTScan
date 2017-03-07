@@ -1,8 +1,9 @@
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox, QDesktopWidget, QMenuBar, QMainWindow, QAction, qApp, QFileDialog, QLabel, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView
+from PyQt5.QtWidgets import QApplication, QWidget, QErrorMessage, QVBoxLayout, QTextBrowser, QDialogButtonBox, QPushButton, QDialog, QMessageBox, QDesktopWidget, QMenuBar, QMainWindow, QAction, qApp, QFileDialog, QLabel, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import QRect, Qt
+from PyQt5 import QtCore
 from scipy import misc
 
 class Scene(QGraphicsScene):
@@ -68,6 +69,11 @@ class MainWindow(QMainWindow):
             self.formWidget.gv2.fitInView(QGraphicsPixmapItem(self.pict).boundingRect(),
                                          Qt.KeepAspectRatio)
             print(self.formWidget.image)
+            self.formWidget.sinogramButton.setDisabled(False)
+            self.formWidget.detectors.setDisabled(False)
+            self.formWidget.alpha.setDisabled(False)
+            self.formWidget.width.setDisabled(False)
+            self.formWidget.setStyleSheet("QLabel {color: rgb(10, 10, 10)}")
             #self.gv.show()
 
 
@@ -83,25 +89,67 @@ class MainWindow(QMainWindow):
         else:
             event.ignore()
 
+class SinogramDialog(QDialog):
+    def __init__(self, parent=None):
+        super(SinogramDialog, self).__init__(parent)
+        self.setWindowTitle("Sinogram")
+        self.buttonBox = QDialogButtonBox(self)
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+        #self.buttonBox.accepted.connect() <- what will happen on Ok
+        self.buttonBox.rejected.connect(self.close) #<- what will happen on Cancel
+        self.textBrowser = QTextBrowser(self)
+        self.textBrowser.append("This is a QTextBrowser!")
+        self.slider = QtWidgets.QSlider(Qt.Horizontal)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self)
+        self.verticalLayout.addWidget(self.slider)
+        self.verticalLayout.addWidget(self.textBrowser)
+        self.verticalLayout.addWidget(self.buttonBox)
+
 class FormWidget(QWidget):
 
     def __init__(self, parent):
         super(FormWidget, self).__init__(parent)
-        self.showButton = QPushButton('Show', self)
+        self.sinogramButton = QPushButton('Generate sinogram', self)
         self.sButton = QPushButton('Lol', self)
-        self.showButton.setToolTip("Click to see current image")
-        self.showButton.resize(self.showButton.sizeHint())
-        self.showButton.clicked.connect(self.showImage)
+        self.sinogramButton.setToolTip("Click to generate sinogram")
+        self.sinogramButton.resize(self.sinogramButton.sizeHint())
+        self.sinogramButton.clicked.connect(self.newWindowWithSinogram)
+        self.sinogramButton.setDisabled(True)
         self.picture = None
         self.image = None
         self.scene = QGraphicsScene()
         self.sscene = QGraphicsScene()
-
         self.grid = QtWidgets.QGridLayout(self)
         self.hbox = QtWidgets.QHBoxLayout()
         self.createGraphicView()
         self.gv2 = QGraphicsView(self.sscene, self)
-        self.hbox.addWidget(self.showButton)
+        self.alpha = QtWidgets.QTextEdit()
+        self.alpha.setDisabled(True)
+        self.alpha.setFixedHeight(25)
+        self.alpha.setToolTip("Type angle of single iteration in degrees")
+        self.detectors = QtWidgets.QTextEdit()
+        self.detectors.setDisabled(True)
+        self.detectors.setFixedHeight(25)
+        self.detectors.setToolTip("Type number of detectors in the cone of emiter")
+        self.width = QtWidgets.QTextEdit()
+        self.width.setDisabled(True)
+        self.width.setFixedHeight(25)
+        self.width.setToolTip("Type width of cone of the emiter in degrees")
+        self.alphaLabel = QLabel("Angle alpha")
+        self.detectorsLabel = QLabel("Number of detectors n")
+        self.widthLabel = QLabel("Width of cone")
+        self.formVBox = QtWidgets.QVBoxLayout()
+        self.formVBox.addStretch(1)
+        self.formVBox.addWidget(self.alphaLabel)
+        self.formVBox.addWidget(self.alpha)
+        self.formVBox.addWidget(self.detectorsLabel)
+        self.formVBox.addWidget(self.detectors)
+        self.formVBox.addWidget(self.widthLabel)
+        self.formVBox.addWidget(self.width)
+        self.formVBox.addWidget(self.sinogramButton)
+        self.setStyleSheet("QLabel {color: rgb(200, 200, 200)}")
+        self.hbox.addLayout(self.formVBox)
         self.hbox.addStretch(1)
         self.vbox = QtWidgets.QVBoxLayout()
         self.vbox.addStretch(1)
@@ -112,8 +160,29 @@ class FormWidget(QWidget):
         self.grid.addWidget(self.gv2, 1, 1, 1, 1)
         self.setLayout(self.grid)
 
-    def showImage(self):
-        self.gv.show()
+    @QtCore.pyqtSlot()
+    def newWindowWithSinogram(self):
+
+        if(self.areGoodFields()):
+            self.sinogram = SinogramDialog()
+            self.sinogram.exec()
+        else:
+            self.error = QMessageBox.critical(None, "Error", "One of the values is wrong", QMessageBox.Ok)
+
+    def areGoodFields(self):
+        try:
+            x = int(self.alpha.toPlainText())
+            x = int(self.detectors.toPlainText())
+            x = int(self.width.toPlainText())
+        except ValueError:
+            return False
+        if int(self.alpha.toPlainText()) not in range(1, 360):
+            return False
+        if int(self.detectors.toPlainText()) <= 0:
+            return False
+        if int(self.width.toPlainText()) not in range(1, 180):
+            return False
+        return True
 
 
     def createGraphicView(self):
