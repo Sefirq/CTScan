@@ -5,10 +5,13 @@ from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import QRect, Qt
 from PyQt5 import QtCore
 from scipy import misc
+from sinogramDialog import SinogramDialog
+
 
 class Scene(QGraphicsScene):
     def __init__(self, parent=None):
         QGraphicsScene.__init__(self, parent)
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -74,8 +77,7 @@ class MainWindow(QMainWindow):
             self.formWidget.alpha.setDisabled(False)
             self.formWidget.width.setDisabled(False)
             self.formWidget.setStyleSheet("QLabel {color: rgb(10, 10, 10)}")
-            #self.gv.show()
-
+            self.formWidget.saveImage(self.image)
 
 
     def closeEvent(self, event):
@@ -89,22 +91,6 @@ class MainWindow(QMainWindow):
         else:
             event.ignore()
 
-class SinogramDialog(QDialog):
-    def __init__(self, parent=None):
-        super(SinogramDialog, self).__init__(parent)
-        self.setWindowTitle("Sinogram")
-        self.buttonBox = QDialogButtonBox(self)
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
-        #self.buttonBox.accepted.connect() <- what will happen on Ok
-        self.buttonBox.rejected.connect(self.close) #<- what will happen on Cancel
-        self.textBrowser = QTextBrowser(self)
-        self.textBrowser.append("This is a QTextBrowser!")
-        self.slider = QtWidgets.QSlider(Qt.Horizontal)
-        self.verticalLayout = QtWidgets.QVBoxLayout(self)
-        self.verticalLayout.addWidget(self.slider)
-        self.verticalLayout.addWidget(self.textBrowser)
-        self.verticalLayout.addWidget(self.buttonBox)
 
 class FormWidget(QWidget):
 
@@ -112,10 +98,6 @@ class FormWidget(QWidget):
         super(FormWidget, self).__init__(parent)
         self.sinogramButton = QPushButton('Generate sinogram', self)
         self.sButton = QPushButton('Lol', self)
-        self.sinogramButton.setToolTip("Click to generate sinogram")
-        self.sinogramButton.resize(self.sinogramButton.sizeHint())
-        self.sinogramButton.clicked.connect(self.newWindowWithSinogram)
-        self.sinogramButton.setDisabled(True)
         self.picture = None
         self.image = None
         self.scene = QGraphicsScene()
@@ -127,15 +109,22 @@ class FormWidget(QWidget):
         self.alpha = QtWidgets.QTextEdit()
         self.alpha.setDisabled(True)
         self.alpha.setFixedHeight(25)
+        self.alpha.setTabChangesFocus(True)
         self.alpha.setToolTip("Type angle of single iteration in degrees")
         self.detectors = QtWidgets.QTextEdit()
         self.detectors.setDisabled(True)
         self.detectors.setFixedHeight(25)
+        self.detectors.setTabChangesFocus(True)
         self.detectors.setToolTip("Type number of detectors in the cone of emiter")
         self.width = QtWidgets.QTextEdit()
         self.width.setDisabled(True)
         self.width.setFixedHeight(25)
+        self.width.setTabChangesFocus(True)
         self.width.setToolTip("Type width of cone of the emiter in degrees")
+        self.sinogramButton.setToolTip("Click to generate sinogram")
+        self.sinogramButton.resize(self.sinogramButton.sizeHint())
+        self.sinogramButton.clicked.connect(self.newWindowWithSinogram)
+        self.sinogramButton.setDisabled(True)
         self.alphaLabel = QLabel("Angle alpha")
         self.detectorsLabel = QLabel("Number of detectors n")
         self.widthLabel = QLabel("Width of cone")
@@ -164,10 +153,13 @@ class FormWidget(QWidget):
     def newWindowWithSinogram(self):
 
         if(self.areGoodFields()):
-            self.sinogram = SinogramDialog()
-            self.sinogram.exec()
+            self.sinogram = SinogramDialog(self.image, self.alpha.toPlainText(), self.detectors.toPlainText(), self.width.toPlainText())
+            self.sinogram.showMaximized()
         else:
             self.error = QMessageBox.critical(None, "Error", "One of the values is wrong", QMessageBox.Ok)
+
+    def saveImage(self, img):
+        self.image = img
 
     def areGoodFields(self):
         try:
