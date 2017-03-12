@@ -15,7 +15,7 @@ class SinogramDialog(QDialog):
         self.width = int(width)
         self.setWindowTitle("Sinogram")
         self.testButton = QPushButton("Click")
-        self.testButton.clicked.connect(self.computeCoordsOfEmiter)
+        self.testButton.clicked.connect(self.computeSinogram)
         self.buttonBox = QDialogButtonBox(self)
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
@@ -31,31 +31,32 @@ class SinogramDialog(QDialog):
         self.verticalLayout.addWidget(self.textBrowser)
         self.verticalLayout.addWidget(self.buttonBox)
 
-    def computeCoordsOfEmiter(self):
+    def computeSinogram(self):
         x, y = self.image.shape
         for angle in range(0, 360, self.alpha):
-            iksy = list()
-            iks = list()
-            igreki = list()
-            igrek = list()
+            detectors_x_list = list()
+            detectors_y_list = list()
             emiter_x = x/2 - x/2*math.cos(math.radians(angle))
             emiter_y = y/2 - y/2*math.sin(math.radians(angle))
-            iks.append(emiter_x)
-            igrek.append(emiter_y)
+            iks = emiter_x
+            igrek = emiter_y
             print(str(emiter_x) + " " + str(emiter_y) + " dla" + str(angle) + " stopni")
             for detector in range(self.detectors):
                 det_x = x / 2 - x / 2 * math.cos(
                     math.radians(angle + 180 - self.width / 2 + detector * self.width / (self.detectors - 1)))
                 det_y = y / 2 - y / 2 * math.sin(
                     math.radians(angle + 180 - self.width / 2 + detector * self.width / (self.detectors - 1)))
-                iksy.append(det_x)
-                igreki.append(det_y)
+                detectors_x_list.append(det_x)
+                detectors_y_list.append(det_y)
                 print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
             plt.scatter(iks, igrek, color="red")
-            plt.scatter(iksy, igreki, color="blue")
-            circle = plt.Circle([200, 200], radius=200, fill=False)
+            plt.scatter(detectors_x_list, detectors_y_list, color="blue")
+            circle = plt.Circle([x/2, y/2], radius=x/2, fill=False, color='green')
+            for (x2, y2) in zip(detectors_x_list, detectors_y_list):
+                plt.plot([iks, x2], [igrek, y2], color='gray', linestyle='dashed', linewidth=2)
             ax = plt.gca()
-            ax.set_xlim(-1, 400)
-            ax.set_ylim(0, 400)
+            ax.set_xlim(-1, x+1)
+            ax.set_ylim(-1, y+1)
+            ax.imshow(self.image, cmap='gray')
             ax.add_artist(circle)
             plt.show()

@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QErrorMessage, QVBoxLayout, QTextBrowser, QDialogButtonBox, QPushButton, QDialog, QMessageBox, QDesktopWidget, QMenuBar, QMainWindow, QAction, qApp, QFileDialog, QLabel, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import QRect, Qt
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 from scipy import misc
 from sinogramDialog import SinogramDialog
 
@@ -50,9 +50,8 @@ class MainWindow(QMainWindow):
         self.move(fg.topLeft())
 
 
-
     def browseFiles(self, event):
-        filename = QFileDialog.getOpenFileName(self, "Select graphic file", "/home", "Images (*.png, *.jpg)")[0]
+        filename = QFileDialog.getOpenFileName(self, "Select graphic file", "/home", "Images (*.png *.xpm *.jpg) ;; All files (*.*)", options=QFileDialog.DontUseNativeDialog)[0]
         if(len(filename) > 0):
             self.fileLabel.setText("Loaded " + filename)
             width = self.fileLabel.fontMetrics().boundingRect(self.fileLabel.text()).width()
@@ -172,7 +171,7 @@ class FormWidget(QWidget):
             return False
         if int(self.detectors.toPlainText()) <= 0:
             return False
-        if int(self.width.toPlainText()) not in range(1, 180):
+        if int(self.width.toPlainText()) not in range(1, 360):
             return False
         return True
 
