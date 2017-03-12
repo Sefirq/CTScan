@@ -162,13 +162,13 @@ class FormWidget(QWidget):
 
     def areGoodFields(self):
         try:
-            x = int(self.alpha.toPlainText())
+            x = float(self.alpha.toPlainText())
             x = int(self.detectors.toPlainText())
             x = int(self.width.toPlainText())
         except ValueError:
             return False
-        if int(self.alpha.toPlainText()) not in range(1, 360):
-            return False
+        #if int(self.alpha.toPlainText()) not in range(1, 360):
+            #return False
         if int(self.detectors.toPlainText()) <= 0:
             return False
         if int(self.width.toPlainText()) not in range(1, 360):
