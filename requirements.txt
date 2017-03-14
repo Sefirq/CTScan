@@ -1,0 +1,4 @@
+pyqt5>=5.8
+numpy
+matplotlib
+scipy
