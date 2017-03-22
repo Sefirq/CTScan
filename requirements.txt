@@ -2,3 +2,4 @@ pyqt5>=5.8
 numpy
 matplotlib
 scipy
+Pillow==4.0.0
