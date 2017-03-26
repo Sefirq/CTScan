@@ -3,3 +3,5 @@ numpy
 matplotlib
 scipy
 Pillow==4.0.0
+pydicom==0.9.9
+setuptools-34.3.2 (needed for pydicom installation)
