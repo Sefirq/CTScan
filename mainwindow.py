@@ -49,7 +49,6 @@ class MainWindow(QMainWindow):
         fg.moveCenter(centr)
         self.move(fg.topLeft())
 
-
     def browseFiles(self, event):
         filename = QFileDialog.getOpenFileName(self, "Select graphic file", "/home", "Images (*.png *.xpm *.jpg) ;; All files (*.*)", options=QFileDialog.DontUseNativeDialog)[0]
         if(len(filename) > 0):
@@ -78,13 +77,10 @@ class MainWindow(QMainWindow):
             self.formWidget.setStyleSheet("QLabel {color: rgb(10, 10, 10)}")
             self.formWidget.saveImage(self.image)
 
-
     def closeEvent(self, event):
-
         reply = QMessageBox.question(self, 'Message',
                                      "Are you sure you want to quit?", QMessageBox.Yes |
                                      QMessageBox.No, QMessageBox.No)
-
         if reply == QMessageBox.Yes:
             event.accept()
         else:
@@ -162,9 +158,9 @@ class FormWidget(QWidget):
 
     def areGoodFields(self):
         try:
-            x = float(self.alpha.toPlainText())
-            x = int(self.detectors.toPlainText())
-            x = int(self.width.toPlainText())
+            _ = float(self.alpha.toPlainText())
+            _ = int(self.detectors.toPlainText())
+            _ = int(self.width.toPlainText())
         except ValueError:
             return False
         #if int(self.alpha.toPlainText()) not in range(1, 360):
@@ -174,7 +170,6 @@ class FormWidget(QWidget):
         if int(self.width.toPlainText()) not in range(1, 360):
             return False
         return True
-
 
     def createGraphicView(self):
         self.gv = QGraphicsView(self.scene, self)
