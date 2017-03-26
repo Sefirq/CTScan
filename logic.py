@@ -3,13 +3,14 @@ from matplotlib import pyplot as plt
 import numpy as np  # np.append(some_array, column, axis=1) appends a column to array
 import pylab
 
+
 class SinogramLogic:
     def __init__(self, image, alpha, detectors, width):
         self.image = image
         self.alpha = float(alpha)
         self.detectors = int(detectors)
         self.width = int(width)
-        self.sinogram = np.zeros((1, self.detectors))
+        self.sinogram = np.zeros((self.detectors, 1))
         self.result_image = np.zeros(self.image.shape)
 
     def plotEmitersAndDecoders(self, x, y, iks, igrek, detectors_x_list, detectors_y_list):
@@ -28,8 +29,9 @@ class SinogramLogic:
     def computeSinogram(self):
         x, y = self.image.shape
         angle = 0
+        print("computeSinogram")
         #for angle in range(0, 180+self.alpha, self.alpha):
-        while angle < 180+self.alpha:
+        while angle < 360+self.alpha:
             sums = list()
             detectors_x_list = list()
             detectors_y_list = list()
@@ -46,11 +48,11 @@ class SinogramLogic:
                 # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
                 sums.append(self.bresenhamComputeSum(int(emiter_x), int(emiter_y), int(det_x), int(det_y)))
             if angle == 0:
-                self.sinogram[0, :] = list(reversed(sums))
+                self.sinogram[:, 0] = list(sums)
             else:
-                temp = np.zeros((1, self.detectors))
-                temp[0, :] = list(reversed(sums))
-                self.sinogram = np.append(self.sinogram, temp, axis=0)
+                temp = np.zeros((self.detectors, 1))
+                temp[:, 0] = list(sums)
+                self.sinogram = np.append(self.sinogram, temp, axis=1)
             angle += self.alpha
             # self.plotEmitersAndDecoders(x, y, emiter_x, emiter_y, detectors_x_list, detectors_y_list)
         return self.sinogram
@@ -66,7 +68,8 @@ class SinogramLogic:
     def bresenhamComputeSum(self, x_start, y_start, x_end, y_end):
         x = x_start
         y = y_start
-        limit = self.image.shape[0] - 1
+        limity = self.image.shape[0] - 1
+        limitx = self.image.shape[1] - 1
         if x_start < x_end:
             xi = 1
             dx = x_end - x_start
@@ -79,7 +82,7 @@ class SinogramLogic:
         else:
             yi = -1
             dy = y_start - y_end
-        sumOfPixels = int(self.image[min(limit, y)][min(limit, x)])
+        sumOfPixels = int(self.image[min(limity, y)][min(limitx, x)])
         if dx > dy:
             ai = (dy - dx) * 2
             bi = dy * 2
@@ -93,7 +96,7 @@ class SinogramLogic:
                     d += bi
                     x += xi
                 # print(self.image[y - 1][x - 1])
-                sumOfPixels += int(self.image[min(limit, y)][min(limit, x)])
+                sumOfPixels += int(self.image[min(limity, y)][min(limitx, x)])
         else:
             ai = (dx - dy) * 2
             bi = dx * 2
@@ -107,7 +110,7 @@ class SinogramLogic:
                     d += bi
                     y += yi
                 #print(self.image[y-1][x-1])
-                sumOfPixels += int(self.image[min(limit, y)][min(limit, x)])
+                sumOfPixels += int(self.image[min(limity, y)][min(limitx, x)])
         #print("---------")
         #print(sumOfPixels)
         return sumOfPixels  # sum of brightnesses of pixels on a line between emiter and chosen decoder
@@ -141,7 +144,7 @@ class SinogramLogic:
                 else:
                     d += bi
                     x += xi
-                pixels.append((x-1,y-1))
+                pixels.append((x-1, y-1))
         else:
             ai = (dx - dy) * 2
             bi = dx * 2
@@ -154,12 +157,12 @@ class SinogramLogic:
                 else:
                     d += bi
                     y += yi
-                pixels.append((x-1,y-1))
+                pixels.append((x-1, y-1))
         return pixels
 
-    def color_pixels(self, sum, pixels):
+    def color_pixels(self, summ, pixels):
         for coords in pixels:
-            self.result_image[coords[0]][coords[1]] += sum/len(pixels)
+            self.result_image[coords[0]][coords[1]] += summ/len(pixels)
 
     def plot_result(self, result):
         plt.imshow(result*1.0/np.max(result)*255, cmap="gray")
@@ -167,7 +170,8 @@ class SinogramLogic:
 
     def inverse_radon(self, sinogram, output_image_size):
         x, y = self.image.shape
-        for emiter_index, angle in enumerate(range(0, int(180+self.alpha), int(self.alpha))):
+        print("--------------")
+        for emiter_index, angle in enumerate(range(0, int(360+self.alpha), int(self.alpha))):
             sums = list()
             detectors_x_list = list()
             detectors_y_list = list()
@@ -180,26 +184,25 @@ class SinogramLogic:
                     math.radians(angle + 180 - self.width / 2 + detector * self.width / (self.detectors - 1)))
                 detectors_x_list.append(det_x)
                 detectors_y_list.append(det_y)
-                self.color_pixels(sinogram[emiter_index, detector_index], self.pixels_in_line(int(emiter_x), int(emiter_y), int(det_x), int(det_y)))  
+                # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
+                self.color_pixels(sinogram[detector_index, emiter_index],
+                                  self.pixels_in_line(int(emiter_x), int(emiter_y), int(det_x), int(det_y)))
         return self.result_image
 
     def compute_mse(self, input_image, output_image):
         sum = 0
         for input_pixel, output_pixel in zip(np.nditer(input_image), np.nditer(output_image)):
-            print(input_pixel)
+            #print(input_pixel)
             sum += (input_pixel - output_pixel)**2
         
         return sum/input_image.size
-
-    
-
-
-        
 
 from scipy import misc
 filename = 'images/tomograf-zdjecia/Kropka.jpg'
 image = misc.imread(filename, mode="L")
 sinogram = SinogramLogic(image, 5, 100, 150)
-sinogram.plot_sinogram(sinogram.computeSinogram())
-sinogram.plot_result(sinogram.inverse_radon(sinogram.computeSinogram(), image.shape))
-mse = sinogram.compute_mse(image, sinogram.inverse_radon(sinogram.computeSinogram(), image.shape))
+sg = sinogram.computeSinogram()
+sinogram.plot_sinogram(sg)
+invsg = sinogram.inverse_radon(sg, image.shape)
+sinogram.plot_result(invsg)
+mse = sinogram.compute_mse(image, invsg)
