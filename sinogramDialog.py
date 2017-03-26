@@ -46,13 +46,15 @@ class SinogramDialog(QDialog):
         ax.set_ylim(-1, y + 1)
         ax.imshow(self.image, cmap='gray')
         ax.add_artist(circle)
-        plt.show()
+        # plt.show()
+        plt.savefig('wiz.png')
+
 
     def computeSinogram(self):
         x, y = self.image.shape
         angle = 0
         #for angle in range(0, 180+self.alpha, self.alpha):
-        while angle < 180+self.alpha:
+        while angle < 180+self.alpha: #180 + 1e-9
             sums = list()
             detectors_x_list = list()
             detectors_y_list = list()
