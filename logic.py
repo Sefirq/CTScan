@@ -5,12 +5,12 @@ import pylab
 
 
 class SinogramLogic:
-    def __init__(self, image, alpha, detectors, width):
+    def __init__(self, image, alpha, detectors_amount, cone_width):
         self.image = image
         self.alpha = float(alpha)
-        self.detectors = int(detectors)
-        self.width = int(width)
-        self.sinogram = np.zeros((self.detectors, 1))
+        self.detectors_amount = int(detectors_amount)
+        self.cone_width = int(cone_width)
+        self.sinogram = np.zeros((self.detectors_amount, 1))
         self.result_image = np.zeros(self.image.shape)
 
     def plotEmitersAndDecoders(self, x, y, iks, igrek, detectors_x_list, detectors_y_list):
@@ -26,23 +26,23 @@ class SinogramLogic:
         # ax.add_artist(circle)
         # plt.show()
 
-    def computeSinogram(self):
-        x, y = self.image.shape
+    def computeSinogram(self, image, alpha, progress, detectors_amount, cone_width):
+        x, y = image.shape
         angle = 0
         print("computeSinogram")
         #for angle in range(0, 180+self.alpha, self.alpha):
-        while angle < 360+self.alpha:
+        while angle < 360*progress+alpha:
             sums = list()
             detectors_x_list = list()
             detectors_y_list = list()
             emiter_x = x/2 - x/2*math.cos(math.radians(angle))
             emiter_y = y/2 - y/2*math.sin(math.radians(angle))
             #print(str(emiter_x) + " " + str(emiter_y) + " dla " + str(angle) + " stopni")
-            for detector in range(self.detectors):
+            for detector in range(detectors_amount):
                 det_x = x / 2 - x / 2 * math.cos(
-                     math.radians(angle + 180 - self.width / 2 + detector * self.width / (self.detectors - 1)))
+                     math.radians(angle + 180 - cone_width / 2 + detector * cone_width / (detectors_amount - 1)))
                 det_y = y / 2 - y / 2 * math.sin(
-                    math.radians(angle + 180 - self.width / 2 + detector * self.width / (self.detectors - 1)))
+                    math.radians(angle + 180 - cone_width / 2 + detector * cone_width / (detectors_amount - 1)))
                 detectors_x_list.append(det_x)
                 detectors_y_list.append(det_y)
                 # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
@@ -50,7 +50,7 @@ class SinogramLogic:
             if angle == 0:
                 self.sinogram[:, 0] = list(sums)
             else:
-                temp = np.zeros((self.detectors, 1))
+                temp = np.zeros((detectors_amount, 1))
                 temp[:, 0] = list(sums)
                 self.sinogram = np.append(self.sinogram, temp, axis=1)
             angle += self.alpha
@@ -168,20 +168,20 @@ class SinogramLogic:
         plt.imshow(result*1.0/np.max(result)*255, cmap="gray")
         plt.savefig('result.png')
 
-    def inverse_radon(self, sinogram, output_image_size):
+    def inverse_radon(self, sinogram, output_image_size, alpha, progress, detectors_amount, cone_width):
         x, y = self.image.shape
         print("--------------")
-        for emiter_index, angle in enumerate(range(0, int(360+self.alpha), int(self.alpha))):
+        for emiter_index, angle in enumerate(range(0, int(360*progress+alpha), int(alpha))):
             sums = list()
             detectors_x_list = list()
             detectors_y_list = list()
             emiter_x = x/2 - x/2*math.cos(math.radians(angle))
             emiter_y = y/2 - y/2*math.sin(math.radians(angle))
-            for detector_index, detector in enumerate(range(self.detectors)):
+            for detector_index, detector in enumerate(range(detectors_amount)):
                 det_x = x / 2 - x / 2 * math.cos(
-                    math.radians(angle + 180 - self.width / 2 + detector * self.width / (self.detectors - 1)))
+                    math.radians(angle + 180 - cone_width / 2 + detector * cone_width / (detectors_amount - 1)))
                 det_y = y / 2 - y / 2 * math.sin(
-                    math.radians(angle + 180 - self.width / 2 + detector * self.width / (self.detectors - 1)))
+                    math.radians(angle + 180 - cone_width / 2 + detector * cone_width / (detectors_amount - 1)))
                 detectors_x_list.append(det_x)
                 detectors_y_list.append(det_y)
                 # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
@@ -197,12 +197,45 @@ class SinogramLogic:
         
         return sum/input_image.size
 
+    def make_computations(self, image, alpha, progress, detectors_amount, cone_width):
+        sg = self.computeSinogram(image, alpha, progress, detectors_amount, cone_width)
+        invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
+        return self.compute_mse(image, invsg)
+
+
+    def alpha_comparison(self, image):
+        min_alpha = 5
+        max_alpha = 90
+        step = 5
+        detectors_amount = 5
+        cone_width = 10
+        return [self.make_computations(image, alpha, 1,detectors_amount, cone_width) for alpha in range(min_alpha, max_alpha, step)]
+
+    def detectors_amount_comparison(self, image):
+        min_detectors_amount = 1
+        max_detectors_amount = 20
+        step = 1
+        alpha = 5
+        cone_width = 10
+        return [self.make_computations(image, alpha, 1, detectors_amount, cone_width) for detectors_amount in range(min_detectors_amount, max_detectors_amount, step)]
+    
+    def cone_width_comparison(self, image):
+        detectors_amount = 5
+        step = 1
+        alpha = 5
+        min_cone_width = 1
+        max_cone_width = 50
+        return [self.make_computations(image, alpha, 1, detectors_amount, cone_width) for cone_width in range(min_cone_width, max_cone_width, step)]
+    
 from scipy import misc
 filename = 'images/tomograf-zdjecia/Kropka.jpg'
 image = misc.imread(filename, mode="L")
 sinogram = SinogramLogic(image, 5, 100, 150)
-sg = sinogram.computeSinogram()
+progress=1
+sg = sinogram.computeSinogram(image, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
 sinogram.plot_sinogram(sg)
-invsg = sinogram.inverse_radon(sg, image.shape)
+invsg = sinogram.inverse_radon(sg, image.shape, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
 sinogram.plot_result(invsg)
 mse = sinogram.compute_mse(image, invsg)
+
+print(mse)
