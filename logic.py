@@ -29,7 +29,8 @@ class SinogramLogic:
     def computeSinogram(self, image, alpha, progress, detectors_amount, cone_width):
         x, y = image.shape
         angle = 0
-        print("computeSinogram")
+        sinogram = np.zeros((detectors_amount, 1))
+        # print("computeSinogram")
         #for angle in range(0, 180+self.alpha, self.alpha):
         while angle < 360*progress+alpha:
             sums = list()
@@ -48,14 +49,14 @@ class SinogramLogic:
                 # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
                 sums.append(self.bresenhamComputeSum(int(emiter_x), int(emiter_y), int(det_x), int(det_y)))
             if angle == 0:
-                self.sinogram[:, 0] = list(sums)
+                sinogram[:, 0] = list(sums)
             else:
                 temp = np.zeros((detectors_amount, 1))
                 temp[:, 0] = list(sums)
-                self.sinogram = np.append(self.sinogram, temp, axis=1)
-            angle += self.alpha
+                sinogram = np.append(sinogram, temp, axis=1)
+            angle += alpha
             # self.plotEmitersAndDecoders(x, y, emiter_x, emiter_y, detectors_x_list, detectors_y_list)
-        return self.sinogram
+        return sinogram
 
     def plot_sinogram(self, sinogram):
         plt.imshow(sinogram*1.0/np.max(sinogram)*255, cmap="gray")
@@ -169,8 +170,7 @@ class SinogramLogic:
         plt.savefig('result.png')
 
     def inverse_radon(self, sinogram, output_image_size, alpha, progress, detectors_amount, cone_width):
-        x, y = self.image.shape
-        print("--------------")
+        x, y = output_image_size
         for emiter_index, angle in enumerate(range(0, int(360*progress+alpha), int(alpha))):
             sums = list()
             detectors_x_list = list()
@@ -236,6 +236,6 @@ sg = sinogram.computeSinogram(image, sinogram.alpha, progress, sinogram.detector
 sinogram.plot_sinogram(sg)
 invsg = sinogram.inverse_radon(sg, image.shape, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
 sinogram.plot_result(invsg)
-mse = sinogram.compute_mse(image, invsg)
 
-print(mse)
+
+mse = sinogram.compute_mse(image, invsg)
