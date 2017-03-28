@@ -24,8 +24,8 @@
 
 \section*{Udział autorów (jeśli $>1$)}
 \begin{tightlist}
-\item JK zaimplementował..., przeprowadził eksperyment..., opisał..., przygotował...
-\item EK zaimplementowała..., przeprowadziła eksperyment..., opisała..., przygotowała...
+\item SF zaimplementował tworzenie sinogramu, a także jego zapis do formatu DICOM, przygotował środowisko graficzne aplikacji
+\item PH zaimplementował odtwarzanie obrazu wejściowego na podstawie sinogramu wraz z filtrowaniem, przeprowadził eksperyment wyjaśniający wpływ niżej opisanych parametrów na jakoś odtwarzanego obrazu.
 \end{tightlist}
 
 
@@ -51,7 +51,7 @@ Jedynie do obsługi zapisu do formatu DICOM użyliśmy gotowej biblioteki ze wzg
 
 Na Rysunku 1 widzimy, jak działa nasz tomograf komputerowy - jeden emiter obraca się o $360 ^{\circ}$, wysyła promieniowanie rentgenowskie przez badany obiekt i każda wiązka trafia na odpowiedni detektor. W naszej symulacji, przy pomocy algorytmu Bresenhama tworzymy dyskretną linię, prowadzącą od emitera do detektora przez obraz i sumuje jasności pikseli na tej drodze. W ten sposób, na każdej ścieżce emiter-detektor, dla każdego możliwego kąta obrotu emitera, otrzymujemy \textbf{sinogram}, czyli pośredni etap wizualizacji badanego obiektu. Nie podlega on żadnej analizie diagnostycznej. Następnie w wyniku operacji odwrotnej (Odwrotna Dyskretna Transformata Radona) otrzymujemy obraz wynikowy. 
 
-ODTR polega na tym, że z każdym kątem obrotu $\alpha$ i każdą parą emiter-detektor sprzężona jest suma jasności pikseli na ich drodze. Teraz na każdym pikselu, znajdującym się na tej drodze, zostawiamy średnią jasność piksela, wynikającą z odpowiedniej sumy z sinogramu. Po iteracyjnym odtworzeniu obrazu, bez nałożonego filtrowania widzimy niedokładny, rozmyty obraz, podobny do początkowego. NORMALIZACJA? 
+ODTR polega na tym, że z każdym kątem obrotu $\alpha$ i każdą parą emiter-detektor sprzężona jest suma jasności pikseli na ich drodze. Na każdym pikselu, znajdującym się na tej drodze, zostawiamy średnią jas odpowiednieność piksela, wynikającą zj sumy z sinogramu. Po iteracyjnym odtworzeniu obrazu, bez nałożonego filtrowania widzimy niedokładny, rozmyty obraz, podobny do początkowego. NORMALIZACJA? 
 
 RYSUNEK-PIERWOTNY, SINOGRAM, ODTWORZONY
 
@@ -61,9 +61,6 @@ RYSUNEK-PIERWOTNY, SINOGRAM, ODTWORZONY
 \section{Eksperymenty}
 \label{sec-eksperymenty}
 
-Pamiętajmy o różnicy pomiędzy łącznikiem\footnote{Poszukaj w Wikipedii hasła \emph{Dywiz}.} a myślnikiem -- a także o cytowaniu wszelkich materiałów źródłowych w odpowiednich miejscach~\cite{WikiDash}. Cytujmy konkretną stronę, a nie ogólny adres witryny. Cudzysłowy polskie piszemy metodą ,,przecinków i apostrofów''.
-
-Do sprawdzania pisowni bezpośrednio w pliku\ .tex służy między innymi program \emph{aspell}. Rozumie on różne sposoby kodowania polskich literek, a także ma wbudowane filtry do html'a i innych popularnych formatów. Dzięki tym filtrom pomija słowa kluczowe typowe dla danego formatu pliku, analizując tylko właściwy tekst.
 
 \subsection{Cechy dobrego sprawozdania}
 
