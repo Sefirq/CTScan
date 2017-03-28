@@ -1,0 +1,90 @@
+%@descr: wzór sprawozdania, raportu lub pracy - nadaje się do przeróbek
+%@author: Maciej Komosiński
+
+\documentclass{article} 
+\usepackage{polski} %moze wymagac dokonfigurowania latexa, ale jest lepszy niż standardowy babel'owy [polish] 
+\usepackage[utf8]{inputenc} 
+\usepackage[OT4]{fontenc} 
+\usepackage{gensymb}
+\usepackage{graphicx,color} %include pdf's (and png's for raster graphics... avoid raster graphics!) 
+\usepackage{url} 
+\usepackage[pdftex,hyperfootnotes=false,pdfborder={0 0 0},colorlinks=true, linkcolor=blue]{hyperref} %za wszystkimi pakietami; pdfborder nie wszedzie tak samo zaimplementowane bo specyfikacja nieprecyzyjna; pod miktex'em po prostu nie widac wtedy ramek
+
+
+\input{_ustawienia.tex}
+
+%\title{Sprawozdanie z laboratorium:\\Metaheurystyki i Obliczenia Inspirowane Biologicznie}
+%\author{}
+%\date{}
+
+
+\begin{document}
+
+\input{_tytulowa}
+
+\section*{Udział autorów (jeśli $>1$)}
+\begin{tightlist}
+\item JK zaimplementował..., przeprowadził eksperyment..., opisał..., przygotował...
+\item EK zaimplementowała..., przeprowadziła eksperyment..., opisała..., przygotowała...
+\end{tightlist}
+
+
+
+\section{Wstęp}
+
+Naszym zadaniem było stworzenie aplikacji desktopowej w wybranej technologii i zaimplementowanie w niej symulacji dwuwymiarowego tomografu komputerowego. Wszystkie wymagania zostały wypunktowane \href{https://www.cs.put.poznan.pl/ibladek/students/iwm/0_projekt_wspolny_Tomograf.pdf}{tutaj}. Do stworzenia naszej aplikacji użyliśmy:
+\begin{tightlist}
+\item języka Python 3,
+\item środowiska PyQt5 do stworzenia interfejsu okienkowego,
+\item bibliotek dostępnych w języku Python (matplotlib, numpy, pyDicom...)
+\end{tightlist}
+
+Jedynie do obsługi zapisu do formatu DICOM użyliśmy gotowej biblioteki ze względu na trudność manipulacji danymi w tym formacie. Wszystkie obliczenia, zarówno podczas generacji sinogramu, jak i przejściu do obrazu wynikowego, a także obrót emitera i detektorów w funkcji kąta zamodelowaliśmy samodzielnie.
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{tomograf.jpg}
+\end{center}
+\caption{Schemat działania tomografu}
+\label{fig:1Tdelta}
+\end{figure}
+
+Na Rysunku 1 widzimy, jak działa nasz tomograf komputerowy - jeden emiter obraca się o 360\degree, wysyła promieniowanie rentgenowskie przez badany obiekt i każda wiązka trafia na odpowiedni detektor. W naszej symulacji, przy pomocy algorytmu Bresenhama tworzymy dyskretną linię, prowadzącą od emitera do detektora przez obraz i sumuje jasności pikseli na tej drodze. W ten sposób, na każdej ścieżce emiter-detektor, dla każdego możliwego kąta obrotu emitera, otrzymujemy \textbf{sinogram}, czyli pośredni etap wizualizacji badanego obiektu. Nie podlega on żadnej analizie diagnostycznej. Następnie w wyniku operacji odwrotnej (Odwrotna Dyskretna Transformata Radona) otrzymujemy obraz wynikowy. 
+
+ODTR polega na tym, że z każdym kątem obrotu $\alpha$ i każdą parą emiter-detektor sprzężona jest suma jasności pikseli na ich drodze. Teraz na każdym pikselu, znajdującym się na tej drodze, zostawiamy średnią jasność piksela, wynikającą z odpowiedniej sumy z sinogramu. Po iteracyjnym odtworzeniu obrazu, bez nałożonego filtrowania widzimy niedokładny, rozmyty obraz, podobny do początkowego. NORMALIZACJA? 
+
+RYSUNEK-PIERWOTNY, SINOGRAM, ODTWORZONY
+
+\clearpage %pozwol umiescic zalegle rysunki od razu tutaj 
+
+
+\section{Eksperymenty}
+\label{sec-eksperymenty}
+
+Pamiętajmy o różnicy pomiędzy łącznikiem\footnote{Poszukaj w Wikipedii hasła \emph{Dywiz}.} a myślnikiem -- a także o cytowaniu wszelkich materiałów źródłowych w odpowiednich miejscach~\cite{WikiDash}. Cytujmy konkretną stronę, a nie ogólny adres witryny. Cudzysłowy polskie piszemy metodą ,,przecinków i apostrofów''.
+
+Do sprawdzania pisowni bezpośrednio w pliku\ .tex służy między innymi program \emph{aspell}. Rozumie on różne sposoby kodowania polskich literek, a także ma wbudowane filtry do html'a i innych popularnych formatów. Dzięki tym filtrom pomija słowa kluczowe typowe dla danego formatu pliku, analizując tylko właściwy tekst.
+
+\subsection{Cechy dobrego sprawozdania}
+
+Dobre sprawozdanie
+\begin{tightlist}
+\item pozwala odtworzyć samodzielnie czytelnikowi eksperyment (od danych po wyniki),
+\item nie zawiera niedomówień,
+\item przedstawia wnioski uporządkowane od ogólnych do szczegółowych,
+\item cytuje literaturę w tekście,
+\item nie zawiera zbyt obszernych listingów,
+\item czytelnie prezentuje wyniki -- zwykle za pomocą wykresów,
+\item wszelkie dane liczbowe pokazuje z właściwą liczbą miejsc znaczących,
+\item jest zwięzłe i estetyczne.
+\end{tightlist}
+
+
+%%%%%%%%%%%%%%%% literatura %%%%%%%%%%%%%%%%
+
+\bibliography{sprawozd}
+\bibliographystyle{plain}
+
+
+\end{document}
+
