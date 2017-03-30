@@ -205,7 +205,7 @@ class SinogramLogic:
     def image_processing(self, image, alpha, progress, detectors_amount, cone_width):
         sg = self.computeSinogram(image, alpha, progress, detectors_amount, cone_width)
         invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
-        return (sg, invsg)
+        return sg, invsg
 
 
     def alpha_comparison(self, image):

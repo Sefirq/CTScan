@@ -6,7 +6,7 @@ from PyQt5.QtCore import QRect, Qt
 from PyQt5 import QtCore, QtGui
 from scipy import misc
 from sinogramDialog import SinogramDialog
-
+import numpy as np
 
 class Scene(QGraphicsScene):
     def __init__(self, parent=None):
@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
 
     def browseFiles(self, event):
         filename = QFileDialog.getOpenFileName(self, "Select graphic file", "/home", "Images (*.png *.xpm *.jpg) ;; All files (*.*)", options=QFileDialog.DontUseNativeDialog)[0]
-        if(len(filename) > 0):
+        if len(filename) > 0:
             self.fileLabel.setText("Loaded " + filename)
             width = self.fileLabel.fontMetrics().boundingRect(self.fileLabel.text()).width()
             self.fileLabel.setFixedWidth(width+10)
@@ -62,13 +62,13 @@ class MainWindow(QMainWindow):
             self.formWidget.gv.fitInView(QGraphicsPixmapItem(self.formWidget.picture).boundingRect(), Qt.KeepAspectRatio)
             self.formWidget.gv.setVisible(True)
             self.image = misc.imread(filename, mode="L")#, flatten=True) <- IMAGE IN 8bit greyscale
+            print(type(self.image[65][200]))
             self.img = QImage(self.image, self.image.shape[1], self.image.shape[0], self.image.shape[1],
                               QImage.Format_Grayscale8)
             self.pict = QPixmap(self.img)
             self.formWidget.sscene.clear()
             self.formWidget.sscene.addPixmap(self.pict)
-            self.formWidget.gv2.fitInView(QGraphicsPixmapItem(self.pict).boundingRect(),
-                                         Qt.KeepAspectRatio)
+            self.formWidget.gv2.fitInView(QGraphicsPixmapItem(self.pict).boundingRect(), Qt.KeepAspectRatio)
             print(self.formWidget.image)
             self.formWidget.sinogramButton.setDisabled(False)
             self.formWidget.detectors.setDisabled(False)
@@ -146,8 +146,7 @@ class FormWidget(QWidget):
 
     @QtCore.pyqtSlot()
     def newWindowWithSinogram(self):
-
-        if(self.areGoodFields()):
+        if self.areGoodFields():
             self.sinogram = SinogramDialog(self.image, self.alpha.toPlainText(), self.detectors.toPlainText(), self.width.toPlainText())
             self.sinogram.showMaximized()
         else:
@@ -163,8 +162,8 @@ class FormWidget(QWidget):
             _ = int(self.width.toPlainText())
         except ValueError:
             return False
-        #if int(self.alpha.toPlainText()) not in range(1, 360):
-            #return False
+        # if int(self.alpha.toPlainText()) not in range(1, 360):
+            # return False
         if int(self.detectors.toPlainText()) <= 0:
             return False
         if int(self.width.toPlainText()) not in range(1, 360):
@@ -174,8 +173,8 @@ class FormWidget(QWidget):
     def createGraphicView(self):
         self.gv = QGraphicsView(self.scene, self)
         self.gv.setGeometry(QRect(0, 0, 300, 300))
-        #self.gv.setStyleSheet("background-color: rgb(50, 50, 50")
-        #self.gv.setVisible(False)
+        # self.gv.setStyleSheet("background-color: rgb(50, 50, 50")
+        # self.gv.setVisible(False)
 
 
 if __name__ == '__main__':
