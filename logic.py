@@ -173,20 +173,8 @@ class SinogramLogic:
             
 
     def color_pixels(self, summ, pixels):
-        filter = True
-        if filter:
-            for i, coords in enumerate(pixels):
-                for j, coords2 in enumerate(pixels):
-                    k = abs(j-i)
-                    gain = 0
-                    if k==0:
-                        gain = summ/len(pixels)
-                    elif k%2==1:    
-                        gain = -4/math.pi**2/k**2*(summ/len(pixels))
-                    self.result_image[coords[0]][coords[1]] += gain
-        else:
-            for coords in pixels:
-                self.result_image[coords[0]][coords[1]] += summ/len(pixels)
+        for coords in pixels:
+            self.result_image[coords[0]][coords[1]] += summ/len(pixels)
                 
 
     def plot_result(self, result):
@@ -232,13 +220,29 @@ class SinogramLogic:
         invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
         return sg, invsg
 
+    def filter(self, image, window_width):
+        output = np.zeros(image.shape)
+
+        for j in range(image.shape[1]):
+            for i in range(image.shape[0]):
+                gain = 0
+                for window_index in range((-window_width//2), (window_width//2)):
+                    real_window_element_index = i + window_index
+                    if real_window_element_index >= 0 and real_window_element_index < image.shape[0]:
+                        if window_index == 0:
+                            gain += image[real_window_element_index][j] 
+                        elif window_index%2 == 0:
+                            gain -= 4/math.pi**2/window_index**2*image[real_window_element_index][j]
+                output[i][j] += gain
+        return output
+
 
     def alpha_comparison(self, image):
-        min_alpha = 5
+        min_alpha = 1
         max_alpha = 90
         step = 5
-        detectors_amount = 5
-        cone_width = 10
+        detectors_amount = 30
+        cone_width = 30
         return [self.make_computations(image, alpha, 1,detectors_amount, cone_width) for alpha in range(min_alpha, max_alpha, step)]
 
     def detectors_amount_comparison(self, image):
@@ -257,17 +261,42 @@ class SinogramLogic:
         max_cone_width = 50
         return [self.make_computations(image, alpha, 1, detectors_amount, cone_width) for cone_width in range(min_cone_width, max_cone_width, step)]
 
+    def filter_comparison(self, image):
+        detectors_amount = 30
+        min_window_width = 4
+        max_window_width = 50
+        step = 2
+
+        alpha = 5
+        cone_width = 90
+
+        return [self.make_filter_computations(image, alpha, 1, detectors_amount, cone_width, window_width) for window_width in range(min_window_width, max_window_width, step)]
+        
+    def make_filter_computations(self, image, alpha, progress, detectors_amount, cone_width, window_width):
+        sg = self.computeSinogram(image, alpha, progress, detectors_amount, cone_width)
+        invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
+        filtered = self.filter(invsg, window_width)
+        return self.compute_mse(sg, filtered)-self.compute_mse(sg, invsg)
+
 from scipy import misc
 filename = 'images/tomograf-zdjecia/Kwadraty2.jpg'
 image = misc.imread(filename, mode="L")
 sinogram = SinogramLogic(image, 1, 30, 150)
 progress=1
 sg = sinogram.computeSinogram(image, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
-sinogram.plot_sinogram(sg)
+# sinogram.plot_sinogram(sg)
 invsg = sinogram.inverse_radon(sg, image.shape, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
 # filtered = sinogram.fbp(invsg, sinogram.alpha)
 # filtered = sinogram.scikit_iradon(sg)
+#
+# 
 sinogram.plot_result(invsg)
+filtered = sinogram.filter(invsg, 10)
+sinogram.plot_result(filtered)
 
 
-mse = sinogram.compute_mse(image, invsg)
+print(sinogram.filter_comparison(image))
+
+# mse = sinogram.compute_mse(image, invsg)
+
+# print(sinogram.alpha_comparison(image))
