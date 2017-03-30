@@ -1,12 +1,12 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QWidget, QErrorMessage, QVBoxLayout, QTextBrowser, QDialogButtonBox, QPushButton, QDialog, QMessageBox, QDesktopWidget, QMenuBar, QMainWindow, QAction, qApp, QFileDialog, QLabel, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView
+from PyQt5.QtWidgets import QApplication, QTextEdit, QWidget, QErrorMessage, QVBoxLayout, QTextBrowser, QDialogButtonBox, QPushButton, QDialog, QMessageBox, QDesktopWidget, QMenuBar, QMainWindow, QAction, qApp, QFileDialog, QLabel, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import QRect, Qt
 from PyQt5 import QtCore
+from DICOMSaver import save_to_dicom_file
 import math
+import numpy as np
 from matplotlib import pyplot as plt
-import numpy as np  # np.append(some_array, column, axis=1) appends a column to array
-
 from logic import SinogramLogic
 
 
@@ -39,6 +39,55 @@ class SinogramDialog(QDialog):
         self.gvresult.setGeometry(QRect(0, 0, 300, 300))
         self.verticalLayout = QtWidgets.QVBoxLayout(self)
         self.horizontalLayout = QtWidgets.QHBoxLayout(self)
+        self.verticalform = QtWidgets.QVBoxLayout(self)
+        self.patient_sex = QTextEdit()
+        self.patient_sex.setFixedWidth(200)
+        self.patient_sex.setFixedHeight(25)
+        self.patient_sex_label = QLabel("Type patient's sex (M F)")
+        self.patient_sex_label.setFixedHeight(25)
+        self.patient_name = QTextEdit()
+        self.patient_name.setFixedWidth(200)
+        self.patient_name.setFixedHeight(25)
+        self.patient_name_label = QLabel("Type patient's name (Name^Surname)")
+        self.patient_name_label.setFixedHeight(25)
+        self.patients_ID = QTextEdit()
+        self.patients_ID.setFixedWidth(200)
+        self.patients_ID.setFixedHeight(25)
+        self.patients_ID_label = QLabel("Type patient's ID")
+        self.patients_ID_label.setFixedHeight(25)
+        self.comment = QTextEdit()
+        self.comment.setFixedWidth(200)
+        self.comment.setFixedHeight(25)
+        self.comment_label = QLabel("Type your comment")
+        self.comment_label.setFixedHeight(25)
+        self.date = QTextEdit()
+        self.date.setFixedWidth(200)
+        self.date.setFixedHeight(25)
+        self.date_label = QLabel("Type date of photo (YYYYMMDD)")
+        self.date_label.setFixedHeight(25)
+        self.time = QTextEdit()
+        self.time.setFixedWidth(200)
+        self.time.setFixedHeight(25)
+        self.time_label = QLabel("Type time of photo (HHMMSS.MMMMM")
+        self.time_label.setFixedHeight(25)
+        self.dicom_button = QPushButton("Save result to DICOM")
+        self.dicom_button.setFixedHeight(25)
+        self.dicom_button.clicked.connect(self.save_to_dicom)
+        self.verticalform.addWidget(self.patient_name_label)
+        self.verticalform.addWidget(self.patient_name)
+        self.verticalform.addWidget(self.patients_ID_label)
+        self.verticalform.addWidget(self.patients_ID)
+        self.verticalform.addWidget(self.patient_sex_label)
+        self.verticalform.addWidget(self.patient_sex)
+        self.verticalform.addWidget(self.comment_label)
+        self.verticalform.addWidget(self.comment)
+        self.verticalform.addWidget(self.date_label)
+        self.verticalform.addWidget(self.date)
+        self.verticalform.addWidget(self.time_label)
+        self.verticalform.addWidget(self.time)
+        self.verticalform.addWidget(self.dicom_button)
+        self.verticalform.addStretch(1)
+        self.horizontalLayout.addLayout(self.verticalform)
         self.horizontalLayout.addWidget(self.gv)
         self.horizontalLayout.addWidget(self.gvresult)
         self.verticalLayout.addWidget(self.slider)
@@ -47,8 +96,12 @@ class SinogramDialog(QDialog):
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.verticalLayout.addWidget(self.buttonBox)
         self.sinogramLogic = SinogramLogic(self.image, self.alpha, self.detectors, self.width)
-        self.sinograms = []
-        self.invsinograms = []
+
+    def save_to_dicom(self):
+        save_to_dicom_file(self.invsg, "dicom_output.dcm", self.patient_name.toPlainText(), self.patients_ID.toPlainText(), self.patient_sex.toPlainText(),
+                           self.comment.toPlainText(), self.date.toPlainText(), self.time.toPlainText())
+        self.info = QMessageBox.information(self, "File saved", "File saved to .dcm", QMessageBox.Ok)
+
 
     def valuechange(self):
         self.slabel.setText(str(self.slider.value())+"%")
@@ -89,8 +142,7 @@ class SinogramDialog(QDialog):
         sg, invsg = sinogram.image_processing(self.image, self.alpha, progress, self.detectors, self.width)
         print(sg.shape, type(sg), invsg.shape, type(invsg))
         sg = sg*1.0/np.max(sg)*255  # normalize
-        invsg = invsg*1.0/np.max(invsg)*255  # normalize
-        print(type(sg[65][1]), sg[65][1], sg[1][1])
+        self.invsg = invsg*1.0/np.max(invsg)*255  # normalize
         plt.imshow(sg, cmap="gray")
         plt.savefig('foo.png')
         self.img = QImage(sg.astype(np.uint8), sg.shape[1], sg.shape[0], sg.shape[1], QImage.Format_Grayscale8)
@@ -100,7 +152,7 @@ class SinogramDialog(QDialog):
         self.scene.addPixmap(self.pict)
         self.gv.fitInView(QGraphicsPixmapItem(self.pict).boundingRect(), Qt.KeepAspectRatio)
         self.gv.setScene(self.scene)
-        self.img2 = QImage(invsg.astype(np.uint8), invsg.shape[1], invsg.shape[0], invsg.shape[1], QImage.Format_Grayscale8)
+        self.img2 = QImage(self.invsg.astype(np.uint8), self.invsg.shape[1], self.invsg.shape[0], self.invsg.shape[1], QImage.Format_Grayscale8)
         self.pict2 = QPixmap(self.img2)
         self.sscene.clear()
         self.sscene.addPixmap(self.pict2)
