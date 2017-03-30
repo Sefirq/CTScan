@@ -170,10 +170,9 @@ class SinogramLogic:
     #     if filter:
     #         return [sum/len(pixels) for pixel in pixels]
     #     else:
-            
 
     def color_pixels(self, summ, pixels):
-        filter = True
+        filter = False
         if filter:
             for i, coords in enumerate(pixels):
                 for j, coords2 in enumerate(pixels):
@@ -211,20 +210,25 @@ class SinogramLogic:
                 # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
                 self.color_pixels(sinogram[detector_index, emiter_index],
                                   self.pixels_in_line(int(emiter_x), int(emiter_y), int(det_x), int(det_y)))
-                print(emiter_index, detector_index)
+                # print(emiter_index, detector_index)
         return self.result_image
 
     def compute_mse(self, input_image, output_image):
-        sum = 0
+        suma = 0
         for input_pixel, output_pixel in zip(np.nditer(input_image), np.nditer(output_image)):
             #print(input_pixel)
-            sum += (input_pixel - output_pixel)**2
-        
-        return sum/input_image.size
+            suma += (input_pixel - output_pixel)**2
+        print(suma)
+        return suma/input_image.size
 
     def make_computations(self, image, alpha, progress, detectors_amount, cone_width):
         sg = self.computeSinogram(image, alpha, progress, detectors_amount, cone_width)
         invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
+        return self.compute_mse(image, invsg)
+
+    def make_computations2(self):
+        sg = self.computeSinogram(self.image, self.alpha, 1, self.detectors_amount, self.cone_width)
+        invsg = self.inverse_radon(sg, self.image.shape, self.alpha, 1, self.detectors_amount, self.cone_width)
         return self.compute_mse(image, invsg)
 
     def image_processing(self, image, alpha, progress, detectors_amount, cone_width):
@@ -232,42 +236,69 @@ class SinogramLogic:
         invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
         return sg, invsg
 
-
     def alpha_comparison(self, image):
         min_alpha = 5
         max_alpha = 90
         step = 5
-        detectors_amount = 5
-        cone_width = 10
-        return [self.make_computations(image, alpha, 1,detectors_amount, cone_width) for alpha in range(min_alpha, max_alpha, step)]
+        detectors_amount = 20
+        cone_width = 120
+        return [[alpha, self.make_computations(image, alpha, 1, detectors_amount, cone_width)] for alpha in range(min_alpha, max_alpha, step)]
 
     def detectors_amount_comparison(self, image):
-        min_detectors_amount = 1
-        max_detectors_amount = 20
-        step = 1
+        min_detectors_amount = 5
+        max_detectors_amount = 100
+        step = 5
         alpha = 5
-        cone_width = 10
-        return [self.make_computations(image, alpha, 1, detectors_amount, cone_width) for detectors_amount in range(min_detectors_amount, max_detectors_amount, step)]
+        cone_width = 180
+        return [[detectors_amount, self.make_computations(image, alpha, 1, detectors_amount, cone_width)] for detectors_amount in range(min_detectors_amount, max_detectors_amount, step)]
     
     def cone_width_comparison(self, image):
-        detectors_amount = 5
-        step = 1
+        detectors_amount = 100
+        step = 5
         alpha = 5
-        min_cone_width = 1
-        max_cone_width = 50
-        return [self.make_computations(image, alpha, 1, detectors_amount, cone_width) for cone_width in range(min_cone_width, max_cone_width, step)]
+        min_cone_width = 5
+        max_cone_width = 100
+        return [[cone_width, self.make_computations(image, alpha, 1, detectors_amount, cone_width)] for cone_width in range(min_cone_width, max_cone_width, step)]
+
+
+def mse_iterations(image):
+    mses = []
+    alphas = [1]
+    alphas.extend(list(range(5, 91, 5)))
+    print(alphas)
+    for alpha in alphas:
+        print(alpha)
+        sinogram = SinogramLogic(image, alpha, 100, 150)
+        mses.append([alpha, 360/alpha, sinogram.make_computations2()])
+    return mses
 
 from scipy import misc
 filename = 'images/tomograf-zdjecia/Kwadraty2.jpg'
 image = misc.imread(filename, mode="L")
-sinogram = SinogramLogic(image, 1, 30, 150)
-progress=1
-sg = sinogram.computeSinogram(image, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
-sinogram.plot_sinogram(sg)
-invsg = sinogram.inverse_radon(sg, image.shape, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
+sinogram = SinogramLogic(image, 2, 100, 150)
+x = sinogram.alpha_comparison(image)
+iksy = []
+igreki = []
+for l in x:
+    iksy.append(l[0])
+    igreki.append(l[1])
+
+from matplotlib import pyplot as plt
+plt.plot(iksy, igreki, color="blue", marker="v")
+plt.xlabel("Alpha - kąt obrotu")
+plt.ylabel("Błąd średniokwadratowy")
+plt.savefig("lol.pdf")
+# print(sinogram.detectors_amount_comparison(image))
+# print(sinogram.cone_width_comparison(image))
+# progress = 1
+# sg = sinogram.computeSinogram(image, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
+# sinogram.plot_sinogram(sg)
+# invsg = sinogram.inverse_radon(sg, image.shape, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
+# mses = mse_iterations(image)
+# print(mses)
 # filtered = sinogram.fbp(invsg, sinogram.alpha)
 # filtered = sinogram.scikit_iradon(sg)
-sinogram.plot_result(invsg)
+# sinogram.plot_result(invsg)
 
 
-mse = sinogram.compute_mse(image, invsg)
+# mse = sinogram.compute_mse(image, invsg)
