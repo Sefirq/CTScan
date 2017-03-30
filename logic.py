@@ -2,7 +2,10 @@ import math
 from matplotlib import pyplot as plt
 import numpy as np  # np.append(some_array, column, axis=1) appends a column to array
 import pylab
+from scipy.fftpack import fft, ifft, fftfreq
+from skimage.transform import iradon
 
+MAX_ANGLE = 360
 
 class SinogramLogic:
     def __init__(self, image, alpha, detectors_amount, cone_width):
@@ -32,7 +35,7 @@ class SinogramLogic:
         sinogram = np.zeros((detectors_amount, 1))
         # print("computeSinogram")
         #for angle in range(0, 180+self.alpha, self.alpha):
-        while angle < 360*progress+alpha:
+        while angle < MAX_ANGLE*progress+alpha:
             sums = list()
             detectors_x_list = list()
             detectors_y_list = list()
@@ -160,10 +163,31 @@ class SinogramLogic:
                     y += yi
                 pixels.append((x-1, y-1))
         return pixels
+    
+    # def lightness_value_for_pixels(self, sum, pixels):
+    #     filter = False
+        
+    #     if filter:
+    #         return [sum/len(pixels) for pixel in pixels]
+    #     else:
+            
 
     def color_pixels(self, summ, pixels):
-        for coords in pixels:
-            self.result_image[coords[0]][coords[1]] += summ/len(pixels)
+        filter = True
+        if filter:
+            for i, coords in enumerate(pixels):
+                for j, coords2 in enumerate(pixels):
+                    k = abs(j-i)
+                    gain = 0
+                    if k==0:
+                        gain = summ/len(pixels)
+                    elif k%2==1:    
+                        gain = -4/math.pi**2/k**2*(summ/len(pixels))
+                    self.result_image[coords[0]][coords[1]] += gain
+        else:
+            for coords in pixels:
+                self.result_image[coords[0]][coords[1]] += summ/len(pixels)
+                
 
     def plot_result(self, result):
         plt.imshow(result*1.0/np.max(result)*255, cmap="gray")
@@ -171,7 +195,7 @@ class SinogramLogic:
 
     def inverse_radon(self, sinogram, output_image_size, alpha, progress, detectors_amount, cone_width):
         x, y = output_image_size
-        for emiter_index, angle in enumerate(range(0, int(360*progress+alpha), int(alpha))):
+        for emiter_index, angle in enumerate(range(0, int(MAX_ANGLE*progress+alpha), int(alpha))):
             sums = list()
             detectors_x_list = list()
             detectors_y_list = list()
@@ -187,6 +211,7 @@ class SinogramLogic:
                 # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
                 self.color_pixels(sinogram[detector_index, emiter_index],
                                   self.pixels_in_line(int(emiter_x), int(emiter_y), int(det_x), int(det_y)))
+                print(emiter_index, detector_index)
         return self.result_image
 
     def compute_mse(self, input_image, output_image):
@@ -231,15 +256,17 @@ class SinogramLogic:
         min_cone_width = 1
         max_cone_width = 50
         return [self.make_computations(image, alpha, 1, detectors_amount, cone_width) for cone_width in range(min_cone_width, max_cone_width, step)]
-    
+
 from scipy import misc
-filename = 'images/tomograf-zdjecia/Kropka.jpg'
+filename = 'images/tomograf-zdjecia/Kwadraty2.jpg'
 image = misc.imread(filename, mode="L")
-sinogram = SinogramLogic(image, 5, 100, 150)
+sinogram = SinogramLogic(image, 1, 30, 150)
 progress=1
 sg = sinogram.computeSinogram(image, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
 sinogram.plot_sinogram(sg)
 invsg = sinogram.inverse_radon(sg, image.shape, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
+# filtered = sinogram.fbp(invsg, sinogram.alpha)
+# filtered = sinogram.scikit_iradon(sg)
 sinogram.plot_result(invsg)
 
 
