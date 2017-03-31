@@ -5,6 +5,9 @@ import pylab
 from scipy.fftpack import fft, ifft, fftfreq
 from skimage.transform import iradon
 
+from matplotlib import pyplot as plt
+from scipy import misc
+
 MAX_ANGLE = 360
 
 class SinogramLogic:
@@ -22,12 +25,6 @@ class SinogramLogic:
         circle = plt.Circle([x / 2, y / 2], radius=x / 2, fill=False, color='green')
         for (x2, y2) in zip(detectors_x_list, detectors_y_list):
             plt.plot([iks, x2], [igrek, y2], color='gray', linestyle='dashed', linewidth=2)
-        # ax = plt.gca()
-        # ax.set_xlim(-1, x + 1)
-        # ax.set_ylim(-1, y + 1)
-        # ax.imshow(self.image, cmap='gray')
-        # ax.add_artist(circle)
-        # plt.show()
 
     def computeSinogram(self, image, alpha, progress, detectors_amount, cone_width):
         x, y = image.shape
@@ -64,10 +61,6 @@ class SinogramLogic:
     def plot_sinogram(self, sinogram):
         plt.imshow(sinogram*1.0/np.max(sinogram)*255, cmap="gray")
         plt.savefig('foo.png')
-               
-        # ax = plt.gca()
-        # plt.show()
-        # pylab.show()
 
     def bresenhamComputeSum(self, x_start, y_start, x_end, y_end):
         x = x_start
@@ -115,8 +108,6 @@ class SinogramLogic:
                     y += yi
                 #print(self.image[y-1][x-1])
                 sumOfPixels += int(self.image[min(limity, y)][min(limitx, x)])
-        #print("---------")
-        #print(sumOfPixels)
         return sumOfPixels  # sum of brightnesses of pixels on a line between emiter and chosen decoder
 
     def pixels_in_line(self, x_start, y_start, x_end, y_end):
@@ -163,22 +154,18 @@ class SinogramLogic:
                     y += yi
                 pixels.append((x-1, y-1))
         return pixels
-    
-    # def lightness_value_for_pixels(self, sum, pixels):
-    #     filter = False
-        
-    #     if filter:
-    #         return [sum/len(pixels) for pixel in pixels]
-    #     else:
-            
 
     def color_pixels(self, summ, pixels):
         for coords in pixels:
             self.result_image[coords[0]][coords[1]] += summ/len(pixels)
-                
 
+    def normalize(self, image):
+        amin = np.min(image)
+        amax = np.max(image)
+        return (image-amin)/(amax - amin)
+                
     def plot_result(self, result):
-        plt.imshow(result*1.0/np.max(result)*255, cmap="gray")
+        plt.imshow(self.normalize(result)*255, cmap="gray")
         plt.savefig('result.png')
 
     def inverse_radon(self, sinogram, output_image_size, alpha, progress, detectors_amount, cone_width):
@@ -199,28 +186,34 @@ class SinogramLogic:
                 # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
                 self.color_pixels(sinogram[detector_index, emiter_index],
                                   self.pixels_in_line(int(emiter_x), int(emiter_y), int(det_x), int(det_y)))
-                print(emiter_index, detector_index)
+                # print(emiter_index, detector_index)
         return self.result_image
 
     def compute_mse(self, input_image, output_image):
-        sum = 0
-        for input_pixel, output_pixel in zip(np.nditer(input_image), np.nditer(output_image)):
+        suma = 0
+        for input_pixel, output_pixel in zip(np.nditer(self.normalize(input_image)), np.nditer(self.normalize(output_image))):
             #print(input_pixel)
-            sum += (input_pixel - output_pixel)**2
-        
-        return sum/input_image.size
+            suma += (input_pixel - output_pixel)**2
+        # print(suma)
+        return suma/input_image.size
 
     def make_computations(self, image, alpha, progress, detectors_amount, cone_width):
         sg = self.computeSinogram(image, alpha, progress, detectors_amount, cone_width)
         invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
         return self.compute_mse(image, invsg)
 
+    def make_computations2(self):
+        sg = self.computeSinogram(self.image, self.alpha, 1, self.detectors_amount, self.cone_width)
+        invsg = self.inverse_radon(sg, self.image.shape, self.alpha, 1, self.detectors_amount, self.cone_width)
+        return self.compute_mse(image, invsg)
+
     def image_processing(self, image, alpha, progress, detectors_amount, cone_width):
         sg = self.computeSinogram(image, alpha, progress, detectors_amount, cone_width)
         invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
-        return sg, invsg
+        filtered = self.filter(invsg, 5)
+        return sg, filtered
 
-    def filter(self, image, window_width):
+    def filter2(self, image, window_width):
         output = np.zeros(image.shape)
 
         for j in range(image.shape[1]):
@@ -236,30 +229,61 @@ class SinogramLogic:
                 output[i][j] += gain
         return output
 
+    def filter(self, image, window_width):
+        output = np.zeros(image.shape)
+
+        for j in range(image.shape[1]):
+            for i in range(image.shape[0]):
+                gain = 0
+                for window_index in range((-window_width//2), (window_width//2)):
+                    real_window_element_index = i + window_index
+                    if real_window_element_index >= 0 and real_window_element_index < image.shape[0]:
+                        
+                        if window_index == 0:
+                            gain += image[real_window_element_index][j] 
+                        elif window_index%2 == 0:
+                            gain += image[real_window_element_index][j] * 0.5
+                        elif window_index%3 == 0:
+                            gain += image[real_window_element_index][j] * 0.25
+                output[i][j] += gain
+        return output
+
 
     def alpha_comparison(self, image):
         min_alpha = 1
         max_alpha = 90
         step = 5
-        detectors_amount = 30
-        cone_width = 30
-        return [self.make_computations(image, alpha, 1,detectors_amount, cone_width) for alpha in range(min_alpha, max_alpha, step)]
+        detectors_amount = 20
+        cone_width = 120
+        return [[alpha, self.make_computations(image, alpha, 1, detectors_amount, cone_width)] for alpha in range(min_alpha, max_alpha, step)]
 
     def detectors_amount_comparison(self, image):
-        min_detectors_amount = 1
-        max_detectors_amount = 20
-        step = 1
+        min_detectors_amount = 5
+        max_detectors_amount = 100
+        step = 5
         alpha = 5
-        cone_width = 10
-        return [self.make_computations(image, alpha, 1, detectors_amount, cone_width) for detectors_amount in range(min_detectors_amount, max_detectors_amount, step)]
+        cone_width = 180
+        return [[detectors_amount, self.make_computations(image, alpha, 1, detectors_amount, cone_width)] for detectors_amount in range(min_detectors_amount, max_detectors_amount, step)]
     
     def cone_width_comparison(self, image):
-        detectors_amount = 5
-        step = 1
+        detectors_amount = 100
+        step = 5
         alpha = 5
-        min_cone_width = 1
-        max_cone_width = 50
-        return [self.make_computations(image, alpha, 1, detectors_amount, cone_width) for cone_width in range(min_cone_width, max_cone_width, step)]
+        min_cone_width = 5
+        max_cone_width = 100
+        return [[cone_width, self.make_computations(image, alpha, 1, detectors_amount, cone_width)] for cone_width in range(min_cone_width, max_cone_width, step)]
+
+
+    def mse_iterations(image):
+        mses = []
+        alphas = [1]
+        alphas.extend(list(range(5, 91, 5)))
+        print(alphas)
+        for alpha in alphas:
+            print(alpha)
+            sinogram = SinogramLogic(image, alpha, 100, 150)
+            mses.append([alpha, 360/alpha, sinogram.make_computations2()])
+        return mses
 
     def filter_comparison(self, image):
         detectors_amount = 30
@@ -276,27 +300,60 @@ class SinogramLogic:
         sg = self.computeSinogram(image, alpha, progress, detectors_amount, cone_width)
         invsg = self.inverse_radon(sg, image.shape, alpha, progress, detectors_amount, cone_width)
         filtered = self.filter(invsg, window_width)
-        return self.compute_mse(sg, filtered)-self.compute_mse(sg, invsg)
+        return self.compute_mse(sg, invsg)-self.compute_mse(sg, filtered)
 
-from scipy import misc
-filename = 'images/tomograf-zdjecia/Kwadraty2.jpg'
-image = misc.imread(filename, mode="L")
-sinogram = SinogramLogic(image, 1, 30, 150)
-progress=1
-sg = sinogram.computeSinogram(image, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
-# sinogram.plot_sinogram(sg)
-invsg = sinogram.inverse_radon(sg, image.shape, sinogram.alpha, progress, sinogram.detectors_amount, sinogram.cone_width)
-# filtered = sinogram.fbp(invsg, sinogram.alpha)
-# filtered = sinogram.scikit_iradon(sg)
-#
-# 
-sinogram.plot_result(invsg)
-filtered = sinogram.filter(invsg, 10)
-sinogram.plot_result(filtered)
+    def detectors_amount_plot(self, image):
+        data = self.detectors_amount_comparison(image)
+        x_axis = []
+        y_axis = []
 
+        for element in data:
+            x_axis.append(element[0])
+            y_axis.append(element[1])
+        
+        plt.plot(x_axis, y_axis, color="blue", marker="v")
+        plt.title("Zależność błędu średniokwadratowego od liczby detektorów")
+        plt.xlabel("Liczba detektorów")
+        plt.ylabel("Błąd średniokwadratowy")
+        plt.savefig("detectors_amount.pdf")
 
-print(sinogram.filter_comparison(image))
+    def alpha_plot(self, image):
+        data = self.alpha_comparison(image)
+        x_axis = []
+        y_axis = []
 
-# mse = sinogram.compute_mse(image, invsg)
+        for element in data:
+            x_axis.append(element[0])
+            y_axis.append(element[1])
+        
+        plt.plot(x_axis, y_axis, color="blue", marker="v")
+        plt.title("Zależność błędu średniokwadratowego od kąta alfa")
+        plt.xlabel("Kąt alfa")
+        plt.ylabel("Błąd średniokwadratowy")
+        plt.savefig("alpha.pdf")
 
-# print(sinogram.alpha_comparison(image))
+    def cone_width_plot(self, image):
+        data = self.cone_width_comparison(image)
+        x_axis = []
+        y_axis = []
+
+        for element in data:
+            x_axis.append(element[0])
+            y_axis.append(element[1])
+        
+        plt.plot(x_axis, y_axis, color="blue", marker="v")
+        plt.title("Zależność błędu średniokwadratowego od rozpiętości kątowej")
+        plt.xlabel("Rozpiętość kątowa")
+        plt.ylabel("Błąd średniokwadratowy")
+        plt.savefig("cone_width.pdf")
+
+    
+
+if __name__ == "__main__":
+    
+    filename = 'images/tomograf-zdjecia/Kwadraty2.jpg'
+    image = misc.imread(filename, mode="L")
+    sinogram = SinogramLogic(image, 1, 300, 90)
+
+    sinogram.detectors_amount_plot(image)
+

@@ -22,7 +22,7 @@
 
 \input{_tytulowa}
 
-\section*{Udział autorów (jeśli $>1$)}
+\section*{Udział autorów}
 \begin{tightlist}
 \item SF zaimplementował tworzenie sinogramu, a także jego zapis do formatu DICOM, przygotował środowisko graficzne aplikacji
 \item PH zaimplementował odtwarzanie obrazu wejściowego na podstawie sinogramu wraz z filtrowaniem, przeprowadził eksperyment wyjaśniający wpływ niżej opisanych parametrów na jakoś odtwarzanego obrazu.
@@ -64,6 +64,8 @@ RYSUNEK-PIERWOTNY, SINOGRAM, ODTWORZONY
 
 \subsection{Cechy dobrego sprawozdania}
 
+
+
 Dobre sprawozdanie
 \begin{tightlist}
 \item pozwala odtworzyć samodzielnie czytelnikowi eksperyment (od danych po wyniki),
@@ -75,6 +77,24 @@ Dobre sprawozdanie
 \item wszelkie dane liczbowe pokazuje z właściwą liczbą miejsc znaczących,
 \item jest zwięzłe i estetyczne.
 \end{tightlist}
+
+
+\subsection{Wpływ kąta $\alpha$ na jakość przetwarzania}
+
+Pierwszym z parametrów wpływających na jakość przetwarzania jest kąt o jaki obraca się emiter w jednej iteracji. 
+
+
+\subsection{Wpływ liczby detektorów na jakość przetwarzania}
+
+Kolejnym z czynników jest liczba detektorów. Na poniższym zestawieniu widać wyraźnie, że wraz z rosnącą liczbą detektorów jakość przetwarzania rośnie. Na osi y przedstawione są wartości błędu średniokwadratowego dla kolejnych wartości liczb detektorów, które znajdują się na osi x. 
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{detectors_amount.pdf}
+\end{center}
+\caption{Wpływ liczby detektorów na jakość przetwarzania}
+\label{fig:detectors_amount}
+\end{figure}
 
 
 %%%%%%%%%%%%%%%% literatura %%%%%%%%%%%%%%%%

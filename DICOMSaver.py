@@ -1,7 +1,7 @@
 import datetime
 import time
-import dicom as dcm
-from dicom.dataset import Dataset, FileDataset
+import pydicom as dcm
+from pydicom.dataset import Dataset, FileDataset
 import numpy as np
 from scipy import misc
 
