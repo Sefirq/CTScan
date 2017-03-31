@@ -216,7 +216,7 @@ class SinogramLogic:
         filtered = self.filter(invsg, 5)
         return sg, filtered
 
-    def filter2(self, image, window_width):
+    def filter(self, image, window_width):
         output = np.zeros(image.shape)
 
         for j in range(image.shape[1]):
@@ -231,26 +231,6 @@ class SinogramLogic:
                             gain -= 4/math.pi**2/window_index**2*image[real_window_element_index][j]
                 output[i][j] += gain
         return output
-
-    def filter(self, image, window_width):
-        output = np.zeros(image.shape)
-
-        for j in range(image.shape[1]):
-            for i in range(image.shape[0]):
-                gain = 0
-                for window_index in range((-window_width//2), (window_width//2)):
-                    real_window_element_index = i + window_index
-                    if real_window_element_index >= 0 and real_window_element_index < image.shape[0]:
-                        
-                        if window_index == 0:
-                            gain += image[real_window_element_index][j] 
-                        elif window_index%2 == 0:
-                            gain += image[real_window_element_index][j] * 0.5
-                        elif window_index%3 == 0:
-                            gain += image[real_window_element_index][j] * 0.25
-                output[i][j] += gain
-        return output
-
 
     def alpha_comparison(self, image):
         min_alpha = 1
