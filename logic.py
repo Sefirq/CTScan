@@ -8,7 +8,10 @@ from skimage.transform import iradon
 from matplotlib import pyplot as plt
 from scipy import misc
 
+from os import path
+
 MAX_ANGLE = 360
+PLOTS_PATH = 'report/pics'
 
 class SinogramLogic:
     def __init__(self, image, alpha, detectors_amount, cone_width):
@@ -302,8 +305,9 @@ class SinogramLogic:
         filtered = self.filter(invsg, window_width)
         return self.compute_mse(sg, invsg)-self.compute_mse(sg, filtered)
 
-    def detectors_amount_plot(self, image):
-        data = self.detectors_amount_comparison(image)
+
+    def plot_comparison(self, image, function, title, xlabel, ylabel, filename):
+        data = function(image)
         x_axis = []
         y_axis = []
 
@@ -312,40 +316,11 @@ class SinogramLogic:
             y_axis.append(element[1])
         
         plt.plot(x_axis, y_axis, color="blue", marker="v")
-        plt.title("Zależność błędu średniokwadratowego od liczby detektorów")
-        plt.xlabel("Liczba detektorów")
-        plt.ylabel("Błąd średniokwadratowy")
-        plt.savefig("detectors_amount.pdf")
-
-    def alpha_plot(self, image):
-        data = self.alpha_comparison(image)
-        x_axis = []
-        y_axis = []
-
-        for element in data:
-            x_axis.append(element[0])
-            y_axis.append(element[1])
-        
-        plt.plot(x_axis, y_axis, color="blue", marker="v")
-        plt.title("Zależność błędu średniokwadratowego od kąta alfa")
-        plt.xlabel("Kąt alfa")
-        plt.ylabel("Błąd średniokwadratowy")
-        plt.savefig("alpha.pdf")
-
-    def cone_width_plot(self, image):
-        data = self.cone_width_comparison(image)
-        x_axis = []
-        y_axis = []
-
-        for element in data:
-            x_axis.append(element[0])
-            y_axis.append(element[1])
-        
-        plt.plot(x_axis, y_axis, color="blue", marker="v")
-        plt.title("Zależność błędu średniokwadratowego od rozpiętości kątowej")
-        plt.xlabel("Rozpiętość kątowa")
-        plt.ylabel("Błąd średniokwadratowy")
-        plt.savefig("cone_width.pdf")
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.savefig(path.join(PLOTS_PATH, filename))
+        plt.gcf().clear()
 
     
 
@@ -355,5 +330,13 @@ if __name__ == "__main__":
     image = misc.imread(filename, mode="L")
     sinogram = SinogramLogic(image, 1, 300, 90)
 
-    sinogram.detectors_amount_plot(image)
+    # sinogram.detectors_amount_plot(image)
+    # sinogram.cone_width_plot(image)
+    # sinogram.alpha_plot(image)
+
+    sinogram.plot_comparison(image, sinogram.alpha_comparison,'Zależność błędu średniokwadratowego od kąta alfa', 'Kąt alfa', 'Błąd średniokwadratowy', 'alpha.pdf')
+    # sinogram.plot_comparison(image, sinogram.cone_width_comparison,'Zależność błędu średniokwadratowego od rozpiętości kątowej', 'Rozpiętość kątowa', 'Błąd średniokwadratowy', 'cone_width.pdf')
+    # sinogram.plot_comparison(image, sinogram.detectors_amount_comparison,'Zależność błędu średniokwadratowego od liczby detektorów', 'Liczba detektorów', 'Błąd średniokwadratowy', 'detectors_amount.pdf')
+
+
 

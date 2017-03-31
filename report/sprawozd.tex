@@ -58,33 +58,25 @@ RYSUNEK-PIERWOTNY, SINOGRAM, ODTWORZONY
 \clearpage %pozwol umiescic zalegle rysunki od razu tutaj 
 
 
-\section{Eksperymenty}
-\label{sec-eksperymenty}
-
-
-\subsection{Cechy dobrego sprawozdania}
-
-
-
-Dobre sprawozdanie
-\begin{tightlist}
-\item pozwala odtworzyć samodzielnie czytelnikowi eksperyment (od danych po wyniki),
-\item nie zawiera niedomówień,
-\item przedstawia wnioski uporządkowane od ogólnych do szczegółowych,
-\item cytuje literaturę w tekście,
-\item nie zawiera zbyt obszernych listingów,
-\item czytelnie prezentuje wyniki -- zwykle za pomocą wykresów,
-\item wszelkie dane liczbowe pokazuje z właściwą liczbą miejsc znaczących,
-\item jest zwięzłe i estetyczne.
-\end{tightlist}
-
+\section{Analiza statystyczna}
+\label{sec_analiza_statystyczna}
 
 \subsection{Wpływ kąta $\alpha$ na jakość przetwarzania}
+\label{subsec_alpha_comparison}
 
 Pierwszym z parametrów wpływających na jakość przetwarzania jest kąt o jaki obraca się emiter w jednej iteracji. 
 
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{alpha.pdf}
+\end{center}
+\caption{Wpływ kąta alfa na jakość przetwarzania}
+\label{fig:detectors_amount}
+\end{figure}
+
 
 \subsection{Wpływ liczby detektorów na jakość przetwarzania}
+\label{subsec_detectors_amount_comparison}
 
 Kolejnym z czynników jest liczba detektorów. Na poniższym zestawieniu widać wyraźnie, że wraz z rosnącą liczbą detektorów jakość przetwarzania rośnie. Na osi y przedstawione są wartości błędu średniokwadratowego dla kolejnych wartości liczb detektorów, które znajdują się na osi x. 
 
@@ -96,6 +88,19 @@ Kolejnym z czynników jest liczba detektorów. Na poniższym zestawieniu widać 
 \label{fig:detectors_amount}
 \end{figure}
 
+\subsection{Wpływ rozpiętości kątowej detektorów na jakość przetwarzania}
+\label{subsec_cone_width_comparison}
+
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{cone_width.pdf}
+\end{center}
+\caption{Wpływ rozpiętości kątowej na jakość przetwarzania}
+\label{fig:detectors_amount}
+\end{figure}
+
+\section{Filtr}
 
 %%%%%%%%%%%%%%%% literatura %%%%%%%%%%%%%%%%
 
