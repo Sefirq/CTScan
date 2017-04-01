@@ -80,7 +80,7 @@ Jak widać na poniższym wykresie wraz ze wzrostem wartości kąta alfa wzrasta 
 \subsection{Wpływ liczby detektorów na jakość przetwarzania}
 \label{subsec_detectors_amount_comparison}
 
-Kolejnym z czynników jest liczba detektorów. Na poniższym zestawieniu widać wyraźnie, że wraz z rosnącą liczbą detektorów jakość przetwarzania rośnie. Na osi y przedstawione są wartości błędu średniokwadratowego dla kolejnych wartości liczb detektorów, które znajdują się na osi x. 
+Kolejnym z czynników jest liczba detektorów. Na osi y przedstawione są wartości błędu średniokwadratowego dla kolejnych wartości liczb detektorów, które znajdują się na osi x. 
 
 \begin{figure}[!htbp]
 \begin{center}
@@ -92,12 +92,13 @@ Kolejnym z czynników jest liczba detektorów. Na poniższym zestawieniu widać 
 
 Wraz ze zwiększeniem liczby detektorów spada błąd średniokwadratowy. Wynika to z faktu, że im więcej detektorów w modelu tomografu tym gęściej wysyłane są wiązki z danego emitera, co skutkuje dokładniejszym obrazem. Spowodowane jest to tym, że im więcej wiązek jest wysyłanych tym mniej niezarejestrowanych przez nie pikseli. W takich sytuacjach, piksele, przez które nie przechodziła wiązka, na obrazie wyjściowym będą miały kolor czarny.
 
-Należy zaznaczyć, że po przekroczeniu granicznej iczby detektorów, która zależna jest od pozostałych parametrów przetwarzania zmiana błędu średniokwadratowego stabilizuje się, zmienia się w bardzo niewielkim stopniu, pomimo początkowego bardzo wyraźnego spadku.
+Należy zaznaczyć, że po przekroczeniu granicznej liczby detektorów, która zależna jest od pozostałych parametrów przetwarzania zmiana błędu średniokwadratowego stabilizuje się, zmienia się w bardzo niewielkim stopniu, pomimo początkowego bardzo wyraźnego spadku.
 W naszym eksperymencie, pozostałe parametry czyli kąt alfa i rozpiętość kątowa została ustalona na wartości odpowiednio $5 ^{\circ}$ i $180 ^{\circ}$. Dla tak przyjetych parametrów omawiana wartość graniczna ustalila się na wartość 60. 
 
 \subsection{Wpływ rozpiętości kątowej detektorów na jakość przetwarzania}
 \label{subsec_cone_width_comparison}
 
+Ostatnim z czynników wpływających na przetwarzanie jest rozpiętość kątowa detektorów. Na osi y przedstawione są wartości błędu średniokwadratowego dla kolejnych wartości liczby detektorów, które znajdują się na osi x.
 
 \begin{figure}[!htbp]
 \begin{center}
@@ -106,6 +107,10 @@ W naszym eksperymencie, pozostałe parametry czyli kąt alfa i rozpiętość ką
 \caption{Wpływ rozpiętości kątowej na jakość przetwarzania}
 \label{fig:cone_width}
 \end{figure}
+
+Wraz ze zwiększeniem rozpiętości kątowej detektorów spada błąd średniokwadratowy. Wynika to z  faktu, że im szersze spektrum widzenia tym mniej elementów jest nieobjętych wiązkami w danej iteracji. Pełny obrót tomografu zapewnia zebranie informacji o obiekcie, jednakże im szerszy "kąt widzenia" tomografu, tym więcej zebranych o nim danych.
+
+W początkowej fazie eksperymentu zaobserwować można gwałtowny spadek błędu średniokwadratowego. W odróżnieniu od poprzedniego przypadku, nie ma nagłej zmiany tendencji. Spadek wartości błędu średniokwadratowego zaczyna być powolniejszy, by osiągnąć względną stabilizację. Po osiągnięciu wartości $60^{\circ}$ obserwuje się niewielki spadek wartości aż do końca eksperymentu.
 
 \section{Filtr}
 
