@@ -51,7 +51,7 @@ Jedynie do obsługi zapisu do formatu DICOM użyliśmy gotowej biblioteki ze wzg
 
 Na Rysunku 1 widzimy, jak działa nasz tomograf komputerowy - jeden emiter obraca się o $360 ^{\circ}$, wysyła promieniowanie rentgenowskie przez badany obiekt i każda wiązka trafia na odpowiedni detektor. W naszej symulacji, przy pomocy algorytmu Bresenhama tworzymy dyskretną linię, prowadzącą od emitera do detektora przez obraz i sumuje jasności pikseli na tej drodze. W ten sposób, na każdej ścieżce emiter-detektor, dla każdego możliwego kąta obrotu emitera, otrzymujemy \textbf{sinogram}, czyli pośredni etap wizualizacji badanego obiektu. Nie podlega on żadnej analizie diagnostycznej. Następnie w wyniku operacji odwrotnej (Odwrotna Dyskretna Transformata Radona) otrzymujemy obraz wynikowy. 
 
-ODTR polega na tym, że z każdym kątem obrotu $\alpha$ i każdą parą emiter-detektor sprzężona jest suma jasności pikseli na ich drodze. Na każdym pikselu, znajdującym się na tej drodze, zostawiamy średnią jas odpowiednieność piksela, wynikającą zj sumy z sinogramu. Po iteracyjnym odtworzeniu obrazu, bez nałożonego filtrowania widzimy niedokładny, rozmyty obraz, podobny do początkowego. NORMALIZACJA? 
+ODTR polega na tym, że z każdym kątem obrotu $\alpha$ i każdą parą emiter-detektor sprzężona jest suma jasności pikseli na ich drodze. Na każdym pikselu, znajdującym się na tej drodze, zostawiamy średnią jas odpowiednieność piksela, wynikającą z sumy z sinogramu. Po iteracyjnym odtworzeniu obrazu, bez nałożonego filtrowania widzimy niedokładny, rozmyty obraz, podobny do początkowego. NORMALIZACJA? 
 
 RYSUNEK-PIERWOTNY, SINOGRAM, ODTWORZONY
 
@@ -74,6 +74,8 @@ Pierwszym z parametrów wpływających na jakość przetwarzania jest kąt o jak
 \label{fig:detectors_amount}
 \end{figure}
 
+Jak widać na poniższym wykresie wraz ze wzrostem wartości kąta alfa wzrasta też wartość błędu średniokwadratowego. 
+
 
 \subsection{Wpływ liczby detektorów na jakość przetwarzania}
 \label{subsec_detectors_amount_comparison}
@@ -88,6 +90,11 @@ Kolejnym z czynników jest liczba detektorów. Na poniższym zestawieniu widać 
 \label{fig:detectors_amount}
 \end{figure}
 
+Wraz ze zwiększeniem liczby detektorów spada błąd średniokwadratowy. Wynika to z faktu, że im więcej detektorów w modelu tomografu tym gęściej wysyłane są wiązki z danego emitera, co skutkuje dokładniejszym obrazem. Spowodowane jest to tym, że im więcej wiązek jest wysyłanych tym mniej niezarejestrowanych przez nie pikseli. W takich sytuacjach, piksele, przez które nie przechodziła wiązka, na obrazie wyjściowym będą miały kolor czarny.
+
+Należy zaznaczyć, że po przekroczeniu granicznej iczby detektorów, która zależna jest od pozostałych parametrów przetwarzania zmiana błędu średniokwadratowego stabilizuje się, zmienia się w bardzo niewielkim stopniu, pomimo początkowego bardzo wyraźnego spadku.
+W naszym eksperymencie, pozostałe parametry czyli kąt alfa i rozpiętość kątowa została ustalona na wartości odpowiednio $5 ^{\circ}$ i $180 ^{\circ}$. Dla tak przyjetych parametrów omawiana wartość graniczna ustalila się na wartość 60. 
+
 \subsection{Wpływ rozpiętości kątowej detektorów na jakość przetwarzania}
 \label{subsec_cone_width_comparison}
 
@@ -97,7 +104,7 @@ Kolejnym z czynników jest liczba detektorów. Na poniższym zestawieniu widać 
 \includegraphics[width=0.8\textwidth]{cone_width.pdf}
 \end{center}
 \caption{Wpływ rozpiętości kątowej na jakość przetwarzania}
-\label{fig:detectors_amount}
+\label{fig:cone_width}
 \end{figure}
 
 \section{Filtr}

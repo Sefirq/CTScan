@@ -29,7 +29,7 @@ class SinogramLogic:
         for (x2, y2) in zip(detectors_x_list, detectors_y_list):
             plt.plot([iks, x2], [igrek, y2], color='gray', linestyle='dashed', linewidth=2)
 
-    def computeSinogram(self, image, alpha, progress, detectors_amount, cone_width):
+    def computeSinogram(self, image, alpha, progress, de tectors_amount, cone_width):
         x, y = image.shape
         angle = 0
         sinogram = np.zeros((detectors_amount, 1))
@@ -186,10 +186,8 @@ class SinogramLogic:
                     math.radians(angle + 180 - cone_width / 2 + detector * cone_width / (detectors_amount - 1)))
                 detectors_x_list.append(det_x)
                 detectors_y_list.append(det_y)
-                # print(str(det_x) + " " + str(det_y) + " detektor numer " + str(detector))
                 self.color_pixels(sinogram[detector_index, emiter_index],
                                   self.pixels_in_line(int(emiter_x), int(emiter_y), int(det_x), int(det_y)))
-                # print(emiter_index, detector_index)
         return self.result_image
 
     def compute_mse(self, input_image, output_image):
