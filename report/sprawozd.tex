@@ -4,6 +4,8 @@
 \documentclass{article} 
 \usepackage{polski} %moze wymagac dokonfigurowania latexa, ale jest lepszy niż standardowy babel'owy [polish] 
 \usepackage[utf8]{inputenc} 
+
+\usepackage{amsmath}
 \usepackage[OT4]{fontenc} 
 %\usepackage{gensymb}
 \usepackage{graphicx,color} %include pdf's (and png's for raster graphics... avoid raster graphics!) 
@@ -115,6 +117,17 @@ Wraz ze zwiększeniem rozpiętości kątowej detektorów spada błąd średniokw
 W początkowej fazie eksperymentu zaobserwować można gwałtowny spadek błędu średniokwadratowego. W odróżnieniu od poprzedniego przypadku, nie ma nagłej zmiany tendencji. Spadek wartości błędu średniokwadratowego zaczyna być powolniejszy, by osiągnąć względną stabilizację. Po osiągnięciu wartości $60^{\circ}$ obserwuje się niewielki spadek wartości aż do końca eksperymentu.
 
 \section{Filtr}
+
+Ostatnim zadaniem omawianego projektu było zastosowanie filtrowania w celu poprawienia jakości obrazu wyjściowego. Na podstawie podanej w zadaniu literatury zaimplementowaliśmy filtr będący częścią techniki filtered backprojection. Filtr ten ma za zadanie po pierwsze  ,,obcięcie'' wierzchołków sygnału zawartego w sinogramie uzyskanego przez daną iteracje. Skutkuje to wyrównaniem koloru danego obiektu na obrazie wyjściowym. Po drugie, filtr ten tworzy ujemne wartości wokół tej części sygnału, która jest interpretacją konkretnego obiektu. Takie zachowanie filtra przeciwdziała rozmyciu obrazu wyjściowego, zarysowuje kontury obiektów.
+
+Omawiany filtr może zostać zaimplementowany w następujący sposób: Początkowo należy dobrać odpowiednią wielkość okna z jakim działać będzie filtr. Następnie dla każdego piksela ustawiamy okno, dla którego przetwarzany piksel jest elementem środkowym o indeksie zero, wszystkie elementy okna znajdujące się po jego prawiej stronie indeksowane są liczbami dodatnimi, a wszystkie elementy okna znajdujące się po jego lewej stronie są indeksowane liczbami ujemnymi. Następnie liczymy wartość o jaką zostanie powiększona wartość przetwarzanego piksela. Korzystamy z następujących zależności:
+
+\begin{description}
+\item[Jeżeli indeks ma wartość 0] to dodajemy do sumy wartość piksela o tym indeksie w oknie
+\item[Jeżeli indeks jest nieparzysty] odejmujemy od sumy wartość piksela o tym indeksie przemnożonym przez $\dfrac{4}{\pi^2 k^2}$ , gdzie k jest indeksem w przetwarzanym oknie. 
+\item[Jeżeli indeks jest parzysty] nie dodajemy do omawianej sumy żadnej wartości.\end{description}
+
+Dla realizacji omawianego projektu skorzystaliśmy ze stożkowego modelu zbierania informacji, co nie pozwoliło nam na skorzystanie z omawianego filtra. Jego twórcy stworzyli go na potrzeby modelu równoległego, zatem w czasie naszego eksperymentu otrzymywaliśmy niespodziewane wyniki.
 
 %%%%%%%%%%%%%%%% literatura %%%%%%%%%%%%%%%%
 
