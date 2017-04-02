@@ -29,7 +29,7 @@ class SinogramLogic:
         for (x2, y2) in zip(detectors_x_list, detectors_y_list):
             plt.plot([iks, x2], [igrek, y2], color='gray', linestyle='dashed', linewidth=2)
 
-    def computeSinogram(self, image, alpha, progress, de tectors_amount, cone_width):
+    def computeSinogram(self, image, alpha, progress, detectors_amount, cone_width):
         x, y = image.shape
         angle = 0
         sinogram = np.zeros((detectors_amount, 1))
