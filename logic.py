@@ -63,7 +63,7 @@ class SinogramLogic:
 
     def plot_sinogram(self, sinogram):
         plt.imshow(sinogram*1.0/np.max(sinogram)*255, cmap="gray")
-        plt.savefig('foo.png')
+        plt.savefig('foo.pdf')
 
     def bresenhamComputeSum(self, x_start, y_start, x_end, y_end):
         x = x_start
@@ -169,7 +169,7 @@ class SinogramLogic:
                 
     def plot_result(self, result):
         plt.imshow(self.normalize(result)*255, cmap="gray")
-        plt.savefig('result.png')
+        plt.savefig('result.pdf')
 
     def inverse_radon(self, sinogram, output_image_size, alpha, progress, detectors_amount, cone_width):
         x, y = output_image_size
@@ -307,10 +307,16 @@ class SinogramLogic:
 
 if __name__ == "__main__":
     
-    filename = 'images/tomograf-zdjecia/Kwadraty2.jpg'
+    filename = 'images/tomograf-zdjecia/Kropka.jpg'
     image = misc.imread(filename, mode="L")
     sinogram = SinogramLogic(image, 1, 300, 90)
-
+    sg = sinogram.computeSinogram(image, 1, 1, 300, 90)
+    print("sinogram generated")
+    sinogram.plot_sinogram(sg)
+    print("and plotted")
+    invsg = sinogram.inverse_radon(sg, image.shape, 1, 1, 300, 90)
+    print("inverted sinogram generated")
+    sinogram.plot_result(invsg)
     # sinogram.detectors_amount_plot(image)
     # sinogram.cone_width_plot(image)
     # sinogram.alpha_plot(image)

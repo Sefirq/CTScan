@@ -43,6 +43,7 @@ Naszym zadaniem było stworzenie aplikacji desktopowej w wybranej technologii i 
 
 Jedynie do obsługi zapisu do formatu DICOM użyliśmy gotowej biblioteki ze względu na trudność manipulacji danymi w tym formacie. Wszystkie obliczenia, zarówno podczas generacji sinogramu, jak i przejściu do obrazu wynikowego, a także obrót emitera i detektorów w funkcji kąta zamodelowaliśmy samodzielnie.
 
+\subsection{Dyskretna Transformata Radona}
 \begin{figure}[!htbp]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{tomograf.jpg}
@@ -53,9 +54,45 @@ Jedynie do obsługi zapisu do formatu DICOM użyliśmy gotowej biblioteki ze wzg
 
 Na Rysunku 1 widzimy, jak działa nasz tomograf komputerowy - jeden emiter obraca się o $360 ^{\circ}$, wysyła promieniowanie rentgenowskie przez badany obiekt i każda wiązka trafia na odpowiedni detektor. W naszej symulacji, przy pomocy algorytmu Bresenhama tworzymy dyskretną linię, prowadzącą od emitera do detektora przez obraz i sumuje jasności pikseli na tej drodze. W ten sposób, na każdej ścieżce emiter-detektor, dla każdego możliwego kąta obrotu emitera, otrzymujemy \textbf{sinogram}, czyli pośredni etap wizualizacji badanego obiektu. Nie podlega on żadnej analizie diagnostycznej. Następnie w wyniku operacji odwrotnej (Odwrotna Dyskretna Transformata Radona) otrzymujemy obraz wynikowy. 
 
-ODTR polega na tym, że z każdym kątem obrotu $\alpha$ i każdą parą emiter-detektor sprzężona jest suma jasności pikseli na ich drodze. Na każdym pikselu, znajdującym się na tej drodze, zostawiamy średnią jas odpowiednieność piksela, wynikającą z sumy z sinogramu. Po iteracyjnym odtworzeniu obrazu, bez nałożonego filtrowania widzimy niedokładny, rozmyty obraz, podobny do początkowego. NORMALIZACJA? 
+\subsection{Odwrotna Dyskretna Transformata Radona
+}
+ODTR polega na tym, że z każdym kątem obrotu $\alpha$ i każdą parą emiter-detektor sprzężona jest suma jasności pikseli na ich drodze. Na każdym pikselu, znajdującym się na tej drodze, zostawiamy średnią jasność odpowiedniego piksela, wynikającą z sumy z sinogramu. Po iteracyjnym odtworzeniu obrazu, bez nałożonego filtrowania widzimy niedokładny, rozmyty obraz, podobny do początkowego. 
 
-RYSUNEK-PIERWOTNY, SINOGRAM, ODTWORZONY
+\subsection{Normalizacja}
+
+Po wygenerowaniu wynikowego obrazka, należało dane znormalizować. 
+
+\begin{equation}
+obrazek = \frac{obrazek - min(obrazek)}{max(obrazek)-min(obrazek)} * 255
+\end{equation}
+
+Od każdego piksela naszego obrazka odejmujemy minimalną jasność z całego wynikowego obrazu i dzielimy to przez różnicę między najjasniejszym i najciemniejszym pikselem. Następnie mnożymy każdy piksel obrazka przez 255, by otrzymać wartości z przedziału [0, 255]. Dzięki temu upewniamy się, że najciemniejsze punkty wygenerowanego obrazu będą czarne (a nie szare, jak wynikałoby z działania Odwrotnej Transformaty Radona -- rozkłada jasność równomiernie na całej linii, więc praktycznie żadne piksele nie mogłyby być czarne i różnica między wygenerowany obrazem a obrazem pierwotnym byłaby kolosalna) a najjaśniejsze białe.
+
+Na poniższych rysunkach widzimy jak wygląda krok pośredni generowania obrazu (sinogram -- Rysunek 3) a także obraz końcowy (Rysunek 4).
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Kropka.jpg}
+\end{center}
+\caption{Obraz początkowy}
+\label{fig:1Tdelta}
+\end{figure}
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{foo.pdf}
+\end{center}
+\caption{Wygenerowany sinogram}
+\label{fig:1Tdelta}
+\end{figure}
+
+\begin{figure}[!htbp]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{result.pdf}
+\end{center}
+\caption{Obraz wynikowy}
+\label{fig:1Tdelta}
+\end{figure}
 
 \clearpage %pozwol umiescic zalegle rysunki od razu tutaj 
 
@@ -68,13 +105,13 @@ RYSUNEK-PIERWOTNY, SINOGRAM, ODTWORZONY
 
 Pierwszym z parametrów wpływających na jakość przetwarzania jest kąt o jaki obraca się emiter w jednej iteracji. 
 
-\begin{figure}[!htbp]
-\begin{center}
-\includegraphics[width=0.8\textwidth]{alpha.pdf}
-\end{center}
-\caption{Wpływ kąta alfa na jakość przetwarzania}
-\label{fig:detectors_amount}
-\end{figure}
+%\begin{figure}[!htbp]
+%\begin{center}
+%\includegraphics[width=0.8\textwidth]{alpha.pdf}
+%\end{center}
+%\caption{Wpływ kąta alfa na jakość przetwarzania}
+%\label{fig:detectors_amount}
+%\end{figure}
 
 Jak widać na poniższym wykresie wraz ze wzrostem wartości kąta alfa wzrasta też wartość błędu średniokwadratowego. Wynika to z faktu, że im większy omawiany kąt tym mniej razy nastąpi zebranie informacji o obiekcie, a co za tym idzie obraz wyjściowy będzie coraz mniej dokładny. 
 Przeprowadzona analiza wskazuje, że początkowo wartość błędu zwiększa się w nieznacznym stopniu, by dla wartości w przedziale $\left[ 35; 40 \right]$ osiągnąć największy skok wartości. Następnie, aż do końca eksperymentu błąd rośnie liniowo względem zmiany wartości kąta alfa.
@@ -86,13 +123,13 @@ Przeprowadzona analiza wskazuje, że początkowo wartość błędu zwiększa si�
 
 Kolejnym z czynników jest liczba detektorów. Na osi y przedstawione są wartości błędu średniokwadratowego dla kolejnych wartości liczb detektorów, które znajdują się na osi x. 
 
-\begin{figure}[!htbp]
-\begin{center}
-\includegraphics[width=0.8\textwidth]{detectors_amount.pdf}
-\end{center}
-\caption{Wpływ liczby detektorów na jakość przetwarzania}
-\label{fig:detectors_amount}
-\end{figure}
+%\begin{figure}[!htbp]
+%\begin{center}
+%\includegraphics[width=0.8\textwidth]{detectors_amount.pdf}
+%\end{center}
+%\caption{Wpływ liczby detektorów na jakość przetwarzania}
+%\label{fig:detectors_amount}
+%\end{figure}
 
 Wraz ze zwiększeniem liczby detektorów spada błąd średniokwadratowy. Wynika to z faktu, że im więcej detektorów w modelu tomografu tym gęściej wysyłane są wiązki z danego emitera, co skutkuje dokładniejszym obrazem. Spowodowane jest to tym, że im więcej wiązek jest wysyłanych tym mniej niezarejestrowanych przez nie pikseli. W takich sytuacjach, piksele, przez które nie przechodziła wiązka, na obrazie wyjściowym będą miały kolor czarny.
 
@@ -104,13 +141,13 @@ W naszym eksperymencie, pozostałe parametry czyli kąt alfa i rozpiętość ką
 
 Ostatnim z czynników wpływających na przetwarzanie jest rozpiętość kątowa detektorów. Na osi y przedstawione są wartości błędu średniokwadratowego dla kolejnych wartości liczby detektorów, które znajdują się na osi x.
 
-\begin{figure}[!htbp]
-\begin{center}
-\includegraphics[width=0.8\textwidth]{cone_width.pdf}
-\end{center}
-\caption{Wpływ rozpiętości kątowej na jakość przetwarzania}
-\label{fig:cone_width}
-\end{figure}
+%\begin{figure}[!htbp]
+%\begin{center}
+%\includegraphics[width=0.8\textwidth]{cone_width.pdf}
+%\end{center}
+%\caption{Wpływ rozpiętości kątowej na jakość przetwarzania}
+%\label{fig:cone_width}
+%\end{figure}
 
 Wraz ze zwiększeniem rozpiętości kątowej detektorów spada błąd średniokwadratowy. Wynika to z  faktu, że im szersze spektrum widzenia tym mniej elementów jest nieobjętych wiązkami w danej iteracji. Pełny obrót tomografu zapewnia zebranie informacji o obiekcie, jednakże im szerszy "kąt widzenia" tomografu, tym więcej zebranych o nim danych.
 
