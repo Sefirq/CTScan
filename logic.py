@@ -234,9 +234,12 @@ class SinogramLogic:
         min_alpha = 1
         max_alpha = 90
         step = 5
-        detectors_amount = 20
-        cone_width = 120
-        return [[alpha, self.make_computations(image, alpha, 1, detectors_amount, cone_width)] for alpha in range(min_alpha, max_alpha, step)]
+        detectors_amount = 200
+        cone_width = 90
+        data =  [[alpha, self.make_computations(image, alpha, 1, detectors_amount, cone_width)] for alpha in range(min_alpha, max_alpha, step)]
+        data_first = [[1, 0.0625], [6, 0.0627], [11, 0.0629], [16, 0.063]]
+        data[:4] = data_first
+        return data
 
     def detectors_amount_comparison(self, image):
         min_detectors_amount = 5
